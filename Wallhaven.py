@@ -55,6 +55,9 @@ def download_images(url, page, directory):
     for label in figure:
         image_id = label.attrs["data-wallpaper-id"]
 
+        # 防止访问太频繁
+        time.sleep(10)
+
         info_html = ReptileUtil.bs("https://wallhaven.cc/w/" + image_id, None)
         tags_html = info_html.find_all("a", {"class": "tagname", "rel": "tag"})
         tags = []
