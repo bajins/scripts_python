@@ -39,7 +39,10 @@ def get(url, data):
     :param data:数据，map或dict格式
     :return:
     """
-    return requests.get(url=url, params=data, headers=headers, verify=False, timeout=600)
+    session = requests.sessions.Session()
+    # 关闭多余的连接
+    session.keep_alive = False
+    return session.get(url=url, params=data, headers=headers, verify=False, timeout=600)
 
 
 def post(url, data):
