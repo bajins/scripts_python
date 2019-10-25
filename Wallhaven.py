@@ -58,15 +58,18 @@ def download_images(url, page, directory):
         # 防止访问太频繁
         time.sleep(10)
 
-        info_html = ReptileUtil.bs("https://wallhaven.cc/w/" + image_id, None)
-        tags_html = info_html.find_all("a", {"class": "tagname", "rel": "tag"})
-        tags = []
-        for tag_html in tags_html:
-            tags.append(tag_html.text)
-        # 图片的标签
-        tags = ",".join(tags)
-        if len(tags) > 0 and tags != "":
-            tags = TranslationUtil.translate_google(tags).replace("，", ",")
+        try:
+            info_html = ReptileUtil.bs("https://wallhaven.cc/w/" + image_id, None)
+            tags_html = info_html.find_all("a", {"class": "tagname", "rel": "tag"})
+            tags = []
+            for tag_html in tags_html:
+                tags.append(tag_html.text)
+            # 图片的标签
+            tags = ",".join(tags)
+            if len(tags) > 0 and tags != "":
+                tags = TranslationUtil.translate_google(tags).replace("，", ",")
+        except Exception as e:
+            print(e)
 
         download_url = "https://w.wallhaven.cc/full/" + image_id[:2] + "/wallhaven-" + image_id + ".jpg"
 
