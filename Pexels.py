@@ -15,11 +15,12 @@ import psutil
 import zhconv
 from bs4 import BeautifulSoup
 
+import Constants
 from utils import ReptileUtil, HttpUtil, ThreadPool, DatabaseUtil
 
 save_dir = "images"
 
-s3 = DatabaseUtil.Sqlite3("pexels")
+s3 = DatabaseUtil.Sqlite3(os.path.join(Constants.DATA_PATH, "pexels"))
 
 # 查询表
 select_table = "select name from sqlite_master where type='table' and name='images'"

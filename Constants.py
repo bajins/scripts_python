@@ -31,6 +31,9 @@ TEMP_PATH = sys.path[1]
 # logo图片地址
 LOGO_PATH = os.path.join(TEMP_PATH, "static", "logo.png")
 
+# 数据目录
+DATA_PATH = os.path.join(CURRENT_PATH, "data")
+
 # 配置路径
 APP_CONF = os.path.join(APP_DIRECTORY, "app.conf")
 

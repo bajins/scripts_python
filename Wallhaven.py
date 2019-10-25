@@ -7,18 +7,18 @@
 # @Project: tool-gui-python
 # @Package: 
 # @Software: PyCharm
-
-
+import os
 import time
 from threading import Timer
 
 import psutil
 
+import Constants
 from utils import ReptileUtil, HttpUtil, ThreadPool, DatabaseUtil, TranslationUtil
 
 save_dir = "images"
 
-s3 = DatabaseUtil.Sqlite3("wallhaven")
+s3 = DatabaseUtil.Sqlite3(os.path.join(Constants.DATA_PATH, "wallhaven"))
 
 # 查询表
 select_table = "select name from sqlite_master where type='table' and name='images'"
