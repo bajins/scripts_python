@@ -47,60 +47,65 @@ def download_images(url, page, directory):
     :param directory: 文件存放目录
     :return:
     """
-    html = ReptileUtil.bs(url + str(page), None)
-    figure = html.find_all("figure")
-    # 获取所有包含指定属性的标签
-    page_all = html.find_all(lambda tag: tag.has_attr('original-title'))
+    try:
+        html = ReptileUtil.bs(url + str(page), None)
+        figure = html.find_all("figure")
+        # 获取所有包含指定属性的标签
+        page_all = html.find_all(lambda tag: tag.has_attr('original-title'))
 
-    for label in figure:
-        image_id = label.attrs["data-wallpaper-id"]
+        for label in figure:
+            image_id = label.attrs["data-wallpaper-id"]
 
-        # 防止访问太频繁
-        time.sleep(10)
+            # 防止访问太频繁
+            time.sleep(10)
 
-        try:
-            info_html = ReptileUtil.bs("https://wallhaven.cc/w/" + image_id, None)
-            tags_html = info_html.find_all("a", {"class": "tagname", "rel": "tag"})
-            tags = []
-            for tag_html in tags_html:
-                tags.append(tag_html.text)
-            # 图片的标签
-            tags = ",".join(tags).replace("'", "")
-            if len(tags) > 0 and tags != "":
-                tags = TranslationUtil.translate_google(tags).replace("，", ",")
-        except Exception as e:
-            print(e)
+            try:
+                info_html = ReptileUtil.bs("https://wallhaven.cc/w/" + image_id, None)
+                tags_html = info_html.find_all("a", {"class": "tagname", "rel": "tag"})
+                tags = []
+                for tag_html in tags_html:
+                    tags.append(tag_html.text)
+                # 图片的标签
+                tags = ",".join(tags).replace("'", "")
+                if len(tags) > 0 and tags != "":
+                    tags = TranslationUtil.translate_google(tags).replace("，", ",")
+            except Exception as e:
+                print(e)
 
-        download_url = "https://w.wallhaven.cc/full/" + image_id[:2] + "/wallhaven-" + image_id + ".jpg"
+            download_url = "https://w.wallhaven.cc/full/" + image_id[:2] + "/wallhaven-" + image_id + ".jpg"
 
-        # ThreadPool.can_thread(image_id)
+            # ThreadPool.can_thread(image_id)
 
-        # 每张图片启用单个线程下载
-        done = ThreadPool.pool.submit(HttpUtil.download_file, download_url, directory, "")
-        # done.add_done_callback(ThreadPool.thread_call_back)
+            # 每张图片启用单个线程下载
+            done = ThreadPool.pool.submit(HttpUtil.download_file, download_url, directory, "")
+            # done.add_done_callback(ThreadPool.thread_call_back)
 
-        insert_sql = f"""
-        INSERT OR IGNORE INTO images(image_id,type,page,tags) 
-        VALUES('{image_id}','latest',{page},'{tags}')
-        """
-        DatabaseUtil.insert(s3.connect(), insert_sql)
+            insert_sql = f"""
+            INSERT OR IGNORE INTO images(image_id,type,page,tags) 
+            VALUES('{image_id}','latest',{page},'{tags}')
+            """
+            DatabaseUtil.insert(s3.connect(), insert_sql)
 
-    global run_count
-    run_count += 1
+        global run_count
+        run_count += 1
 
-    # 如果获取到的页数大于0，并且内存占用率小于80%时
-    if len(page_all) > 0 and psutil.virtual_memory().percent < 80 and run_count <= 10:
-        page_total = page_all[len(page_all) - 1].text
-        # 如果不是最后一页，那么就继续下载下一页
-        if page != page_total:
-            download_images(url, page + 1, directory)
+        # 如果获取到的页数大于0，并且内存占用率小于80%时
+        if len(page_all) > 0 and psutil.virtual_memory().percent < 80 and run_count <= 10:
+            page_total = page_all[len(page_all) - 1].text
+            # 如果不是最后一页，那么就继续下载下一页
+            if page != page_total:
+                download_images(url, page + 1, directory)
 
-    elif len(page_all) == 0:
-        run_count = 0
+        elif len(page_all) == 0:
+            run_count = 0
+            Timer(400, download_images, (url, page, directory)).start()
+        else:
+            run_count = 0
+            Timer(400, download_images, (url, page + 1, directory)).start()
+
+    except Exception as e:
+        print(e)
         Timer(400, download_images, (url, page, directory)).start()
-    else:
-        run_count = 0
-        Timer(400, download_images, (url, page + 1, directory)).start()
 
 
 def download_tag_images(tag_id, page, directory):
