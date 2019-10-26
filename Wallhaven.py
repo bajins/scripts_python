@@ -65,7 +65,7 @@ def download_images(url, page, directory):
             for tag_html in tags_html:
                 tags.append(tag_html.text)
             # 图片的标签
-            tags = ",".join(tags)
+            tags = ",".join(tags).replace("'", "")
             if len(tags) > 0 and tags != "":
                 tags = TranslationUtil.translate_google(tags).replace("，", ",")
         except Exception as e:
