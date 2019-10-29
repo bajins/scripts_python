@@ -28,6 +28,8 @@ crate_sql = """
     CREATE TABLE images (
     id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
     image_id TEXT NOT NULL,
+    suffix TEXT NOT NULL,
+    url TEXT NOT NULL,
     type TEXT,
     page TEXT,
     tags TEXT,
@@ -56,33 +58,28 @@ def download_images(url, page, directory):
         for label in figure:
             image_id = label.attrs["data-wallpaper-id"]
 
-            # 防止访问太频繁
-            time.sleep(10)
+            # 图片详情页
+            info_html = ReptileUtil.bs("https://wallhaven.cc/w/" + image_id, None)
+            tags_html = info_html.find_all("a", {"class": "tagname", "rel": "tag"})
+            # 图片的标签
+            tags = ",".join([tag_html.text for tag_html in tags_html]).replace("'", "")
+            if len(tags) > 0 and tags != "":
+                tags = TranslationUtil.translate_google(tags).replace("，", ",")
 
-            try:
-                info_html = ReptileUtil.bs("https://wallhaven.cc/w/" + image_id, None)
-                tags_html = info_html.find_all("a", {"class": "tagname", "rel": "tag"})
-                tags = []
-                for tag_html in tags_html:
-                    tags.append(tag_html.text)
-                # 图片的标签
-                tags = ",".join(tags).replace("'", "")
-                if len(tags) > 0 and tags != "":
-                    tags = TranslationUtil.translate_google(tags).replace("，", ",")
-            except Exception as e:
-                print(e)
-
-            download_url = "https://w.wallhaven.cc/full/" + image_id[:2] + "/wallhaven-" + image_id + ".jpg"
-
+            download_url = info_html.find("img", {"id": "wallpaper"}).attrs["src"]
+            if len(download_url) <= 0 and download_url == "":
+                raise ConnectionError("获取下载链接失败")
             # ThreadPool.can_thread(image_id)
 
             # 每张图片启用单个线程下载
             done = ThreadPool.pool.submit(HttpUtil.download_file, download_url, directory, "")
             # done.add_done_callback(ThreadPool.thread_call_back)
 
+            suffix = download_url[len(download_url) - 3:]
+
             insert_sql = f"""
-            INSERT OR IGNORE INTO images(image_id,type,page,tags) 
-            VALUES('{image_id}','latest',{page},'{tags}')
+            INSERT OR IGNORE INTO images(image_id,suffix,url,type,page,tags) 
+            VALUES('{image_id}','{suffix}','{download_url}','latest','{page}','{tags}')
             """
             DatabaseUtil.insert(s3.connect(), insert_sql)
 

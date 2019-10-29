@@ -30,6 +30,8 @@ crate_sql = """
     CREATE TABLE images (
     id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
     image_id TEXT NOT NULL,
+    suffix TEXT NOT NULL,
+    url TEXT NOT NULL,
     type TEXT,
     page TEXT,
     tags TEXT,
@@ -52,19 +54,17 @@ def download_latest_images(page, directory):
         # 图片原始大小
         # image_org_size = article["data-photo-modal-download-value-original"]
         # 图片下载链接
-        # image_download_link = article["data-photo-modal-image-download-link"]
-        # 图片下载地址
-        # image_download_url = article["data-photo-modal-download-url"]
-
-        download_url = "https://www.pexels.com/photo/" + image_id + "/download/"
+        download_url = article["data-photo-modal-image-download-link"]
         image_name = "pexels-photo-" + image_id + ".jpg"
 
         info_html = ReptileUtil.bs("https://www.pexels.com/zh-cn/photo/" + image_id, None)
-        tags_html = info_html.find("meta", {"name": "keywords"})
-        tags = tags_html.attrs["content"].replace(" ", "")
+        tags = info_html.find("meta", {"name": "keywords"}).attrs["content"].replace(" ", "")
         if len(tags) > 0 and tags != "":
             # 简繁转换
             tags = zhconv.convert(tags[:len(tags) - 7], 'zh-cn')
+
+        # dl = info_html.find(lambda tag: tag.has_attr('data-id') and tag.has_attr('href')).attrs["href"]
+        # dl = info_html.find(lambda tag: tag.has_attr('data-id') and tag.has_attr('data-url')).attrs["data-url"]
 
         # ThreadPool.can_thread(image_id)
 
@@ -72,8 +72,11 @@ def download_latest_images(page, directory):
         done = ThreadPool.pool.submit(HttpUtil.download_file, download_url, directory, image_name)
         # done.add_done_callback(ThreadPool.thread_call_back)
 
+        suffix = download_url[len(download_url) - 3:]
+
         insert_sql = f"""
-        INSERT OR IGNORE INTO images(image_id,type,page,tags) VALUES('{image_id}','latest',{page},'{tags}')
+        INSERT OR IGNORE INTO images(image_id,suffix,url,type,page,tags) 
+        VALUES('{image_id}','{suffix}','{download_url}','latest','{page}','{tags}')
         """
         DatabaseUtil.insert(s3.connect(), insert_sql)
 
