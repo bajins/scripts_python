@@ -58,7 +58,7 @@ def download_latest_images(page, directory):
         image_name = "pexels-photo-" + image_id + ".jpg"
 
         info_html = ReptileUtil.bs("https://www.pexels.com/zh-cn/photo/" + image_id, None)
-        tags = info_html.find("meta", {"name": "keywords"}).attrs["content"].replace(" ", "")
+        tags = info_html.find("meta", {"name": "keywords"}).attrs["content"].replace(" ", "").replace("'", "")
         if len(tags) > 0 and tags != "":
             # 简繁转换
             tags = zhconv.convert(tags[:len(tags) - 7], 'zh-cn')
