@@ -87,7 +87,7 @@ def download_images(url, page, directory):
         run_count += 1
 
         # 如果获取到的页数大于0，并且内存占用率小于80%时
-        if len(page_all) > 0 and psutil.virtual_memory().percent < 80 and run_count <= 10:
+        if len(page_all) > 0 and psutil.virtual_memory().percent < 80 and run_count <= 8:
             page_total = page_all[len(page_all) - 1].text
             # 如果不是最后一页，那么就继续下载下一页
             if page != page_total:
