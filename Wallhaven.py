@@ -69,11 +69,15 @@ def download_images(url, page, directory):
             download_url = info_html.find("img", {"id": "wallpaper"}).attrs["src"]
             if len(download_url) <= 0 and download_url == "":
                 raise ConnectionError("获取下载链接失败")
-            # ThreadPool.can_thread(image_id)
 
-            # 每张图片启用单个线程下载
-            done = ThreadPool.pool.submit(HttpUtil.download_file, download_url, directory, "")
-            # done.add_done_callback(ThreadPool.thread_call_back)
+            image_name = download_url.split("/")
+            image_name = image_name[len(image_name) - 1]
+            # 判断文件是否存在
+            # if not os.path.exists(name):
+            if not os.path.isfile(os.path.join(directory, image_name)):
+                # 每张图片启用单个线程下载
+                done = ThreadPool.pool.submit(HttpUtil.download_file, download_url, directory, image_name)
+                # done.add_done_callback(ThreadPool.thread_call_back)
 
             suffix = download_url[len(download_url) - 3:]
 

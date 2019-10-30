@@ -66,11 +66,12 @@ def download_latest_images(page, directory):
         # dl = info_html.find(lambda tag: tag.has_attr('data-id') and tag.has_attr('href')).attrs["href"]
         # dl = info_html.find(lambda tag: tag.has_attr('data-id') and tag.has_attr('data-url')).attrs["data-url"]
 
-        # ThreadPool.can_thread(image_id)
-
-        # 每张图片启用单个线程下载
-        done = ThreadPool.pool.submit(HttpUtil.download_file, download_url, directory, image_name)
-        # done.add_done_callback(ThreadPool.thread_call_back)
+        # 判断文件是否存在
+        # if not os.path.exists(name):
+        if not os.path.isfile(os.path.join(directory, image_name)):
+            # 每张图片启用单个线程下载
+            done = ThreadPool.pool.submit(HttpUtil.download_file, download_url, directory, image_name)
+            # done.add_done_callback(ThreadPool.thread_call_back)
 
         suffix = download_url[len(download_url) - 3:]
 
