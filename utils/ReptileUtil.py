@@ -22,7 +22,7 @@ from selenium.webdriver.support import expected_conditions
 from utils import HttpUtil, FileUtil
 
 
-def bs(url, data):
+def bs(url, data=None):
     """
     https://www.crummy.com/software/BeautifulSoup/bs4/doc.zh/#id9
     使用BeautifulSoup库爬取数据，

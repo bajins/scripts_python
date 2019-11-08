@@ -138,7 +138,8 @@ def download_file(url, mkdir, name=""):
         # 判断目录是否存在
         if not os.path.exists(mkdir):
             # 目录不存在则创建
-            os.mkdir(mkdir)
+            # os.mkdir(mkdir)
+            os.makedirs(mkdir)
         name = os.path.join(mkdir, name)
 
     # 判断文件是否存在
