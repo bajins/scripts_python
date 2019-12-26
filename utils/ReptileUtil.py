@@ -86,7 +86,7 @@ def download_taobao_chromedriver():
     # info = [s.extract() for s in prefix('prefix')]
 
     local_version_url = url + get_local_version(prefix)
-    print(local_version_url)
+
     # 获取版本下面的文件列表
     driver_list = BeautifulSoup(HttpUtil.get(local_version_url).text, features="lxml")
     filename_list = driver_list.find("pre").find_all("a")
