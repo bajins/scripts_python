@@ -21,10 +21,8 @@ from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 import requests
 import urllib3
 
-headers = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
-                  "Chrome/72.0.3626.109 Safari/537.36 "
-}
+USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) " \
+             "Chrome/77.0.3865.75 Safari/537.36 "
 
 # 去除警告
 requests.packages.urllib3.disable_warnings()
@@ -42,7 +40,7 @@ def get(url, data=None):
     session = requests.sessions.Session()
     # 关闭多余的连接
     session.keep_alive = False
-    return session.get(url, data, headers=headers, verify=False, timeout=600)
+    return session.get(url, params=data, headers={"User-Agent": USER_AGENT}, verify=False, timeout=600)
 
 
 def post(url, data):
@@ -52,7 +50,7 @@ def post(url, data):
     :param data:数据，map或dict格式
     :return:
     """
-    return requests.post(url, data, headers=headers, verify=False, timeout=600)
+    return requests.post(url, data, headers={"User-Agent": USER_AGENT}, verify=False, timeout=600)
 
 
 def delete(url, data):
@@ -62,7 +60,7 @@ def delete(url, data):
     :param data:数据，map或dict格式
     :return:
     """
-    return requests.delete(url=url, params=data, headers=headers, verify=False, timeout=600)
+    return requests.delete(url=url, params=data, headers={"User-Agent": USER_AGENT}, verify=False, timeout=600)
 
 
 def get_json(url, data):
@@ -99,7 +97,7 @@ def download_big_file(url, mkdir, name=""):
         name = os.path.join(mkdir, name)
 
     start_time = time.time()
-    with requests.get(url, stream=True, headers=headers, verify=False) as r:
+    with requests.get(url, stream=True, headers={"User-Agent": USER_AGENT}, verify=False) as r:
         content_length = int(r.headers['content-length'])
         line = 'content-length: %dB/%.2fKB/%.2fMB'
         print(name, line % (content_length, content_length / 1024, content_length / 1024 / 1024))
@@ -147,7 +145,7 @@ def download_file(url, mkdir, name=""):
     if not os.path.isfile(name):
         # 文件不存在才保存
         with open(name, "wb") as f:
-            f.write(requests.get(url, headers=headers, verify=False, timeout=600).content)
+            f.write(requests.get(url, headers={"User-Agent": USER_AGENT}, verify=False, timeout=600).content)
     return name
 
 

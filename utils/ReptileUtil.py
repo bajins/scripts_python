@@ -91,9 +91,10 @@ def download_taobao_chromedriver():
             FileUtil.zip_extract(s, None)
 
 
-def selenium_driver(url):
+def selenium_driver(url, debug=False):
     """
     获取驱动
+    :param debug: 是否调试模式
     :param url:
     :return:
     """
@@ -107,43 +108,42 @@ def selenium_driver(url):
 
     # chrome选项
     options = webdriver.ChromeOptions()
-    # 设置chrome浏览器无界面模式
-    options.add_argument('--headless')
-    # 谷歌文档提到需要加上这个属性来规避bug
-    options.add_argument('--disable-gpu')
-    # 隐身模式启动
-    options.add_argument('-–incognito')
-    # 取消沙盒模式
-    options.add_argument('--no-sandbox')
-    # 指定浏览器分辨率
-    options.add_argument('window-size=1600x900')
-    # 禁止加载所有插件，可以增加速度
-    options.add_argument('-–disable-plugins')
-    options.add_argument('--disable-extensions')
-    # 隐藏滚动条, 应对一些特殊页面
-    options.add_argument('--hide-scrollbars')
 
-    user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) " \
-                 "Chrome/77.0.3865.75 Safari/537.36 "
+    if debug:
+        # 设置chrome浏览器无界面模式
+        options.add_argument('--headless')
+        # 谷歌文档提到需要加上这个属性来规避bug
+        options.add_argument('--disable-gpu')
+        # 隐身模式启动
+        options.add_argument('-–incognito')
+        # 取消沙盒模式
+        options.add_argument('--no-sandbox')
+        # 指定浏览器分辨率
+        options.add_argument('window-size=1600x900')
+        # 禁止加载所有插件，可以增加速度
+        options.add_argument('-–disable-plugins')
+        options.add_argument('--disable-extensions')
+        # 隐藏滚动条, 应对一些特殊页面
+        options.add_argument('--hide-scrollbars')
 
-    options.add_argument(f'--user-agent={user_agent}')
+        options.add_argument(f'--user-agent={HttpUtil.USER_AGENT}')
 
-    # prefs = {
-    #     "profile.managed_default_content_settings.images": 2,
-    #     'profile.default_content_settings.popups': 0,
-    #     'download.default_directory': r'e:\music',
-    #     'download.prompt_for_download': False,
-    #     'download.directory_upgrade': True,
-    #     'safebrowsing.enabled': False,
-    #     'safebrowsing.disable_download_protection': True,
-    #     "profile.default_content_setting_values.automatic_downloads": 0
-    # }
-    # options.add_experimental_option('prefs', prefs)
+        # prefs = {
+        #     "profile.managed_default_content_settings.images": 2,
+        #     'profile.default_content_settings.popups': 0,
+        #     'download.default_directory': r'e:\music',
+        #     'download.prompt_for_download': False,
+        #     'download.directory_upgrade': True,
+        #     'safebrowsing.enabled': False,
+        #     'safebrowsing.disable_download_protection': True,
+        #     "profile.default_content_setting_values.automatic_downloads": 0
+        # }
+        # options.add_experimental_option('prefs', prefs)
 
-    # 这种方式在Headless的模式下是生效的， 非Headless模式下也是生效的。
-    # 不加载图片, 提升速度
-    # options.add_argument('blink-settings=imagesEnabled=false')
-    options.add_argument('-–disable-images')
+        # 这种方式在Headless的模式下是生效的， 非Headless模式下也是生效的。
+        # 不加载图片, 提升速度
+        # options.add_argument('blink-settings=imagesEnabled=false')
+        options.add_argument('-–disable-images')
 
     capa = DesiredCapabilities.CHROME
     # 懒加载模式，不等待页面加载完毕

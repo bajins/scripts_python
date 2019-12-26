@@ -154,6 +154,6 @@ def get_fakenamegenerator_advanced(params=None):
 
 
 if __name__ == '__main__':
-    get_fakenamegenerator_index()
+    print(get_fakenamegenerator_index())
 
-    get_fakenamegenerator_advanced()
+    print(get_fakenamegenerator_advanced())
