@@ -10,6 +10,7 @@
 
 
 import os
+import platform
 import sys
 from bs4 import BeautifulSoup
 from selenium import webdriver
@@ -18,7 +19,28 @@ from selenium.webdriver import DesiredCapabilities
 # from selenium.webdriver.support.wait import WebDriverWait
 # from selenium.webdriver.support import expected_conditions
 
-from utils import HttpUtil, FileUtil
+from utils import HttpUtil, FileUtil, SystemUtil
+
+
+def get_local_version(prefix):
+    """
+    获取本地chrome版本
+    :param prefix:
+    :return:
+    """
+    sysstr = platform.system()
+    if sysstr == "Windows":
+        local_version = SystemUtil.get_windows_software()["Google Chrome"].split(".")[0]
+    elif sysstr == "Linux":
+        local_version = os.popen('google-chrome --version').read().split(" ")[3].split(".")[0]
+
+    for s in prefix:
+        version = s.text
+        # 判断如果全是字母就不是版本号
+        if version.split(".")[0] == local_version:
+            break
+
+    return version
 
 
 def download_chromedriver():
@@ -33,24 +55,18 @@ def download_chromedriver():
     prefix = result.find_all("prefix")
     # 过滤
     # info = [s.extract() for s in prefix('prefix')]
-    ver = []
-    for s in prefix:
-        t = s.text
-        # 判断如果全是字母就不是版本号
-        if not t.replace("/", "").isalpha():
-            ver.append(t)
-    # 对版本号降序排序
-    ver.sort(reverse=True)
+
+    local_version = get_local_version(prefix)
 
     # 获取版本下面的文件列表
-    driver_list = BeautifulSoup(HttpUtil.get(url, {"delimiter": "/", "prefix": ver[0]}).text, features="lxml")
+    driver_list = BeautifulSoup(HttpUtil.get(url, {"delimiter": "/", "prefix": local_version}).text, features="lxml")
     filename_list = driver_list.find_all("key")
 
     for s in filename_list:
         s = s.text
         # 如果在文件名中找到系统平台名称
         if s.find(sys.platform) != -1:
-            filename = s[len(ver[0]):]
+            filename = s[len(local_version):]
             # 下载文件
             HttpUtil.download_file(url + s, None, filename)
             FileUtil.zip_extract(filename, None)
@@ -68,18 +84,11 @@ def download_taobao_chromedriver():
     prefix = result.find("pre").find_all("a")
     # 过滤
     # info = [s.extract() for s in prefix('prefix')]
-    ver = []
-    for s in prefix:
-        t = s.text
-        # 判断如果全是字母就不是版本号
-        if not t.replace("/", "").isalpha() and t.endswith("/"):
-            ver.append(t)
-    # 对版本号降序排序
-    ver.sort(reverse=True)
 
-    latest_version_url = url + ver[0]
+    local_version_url = url + get_local_version(prefix)
+    print(local_version_url)
     # 获取版本下面的文件列表
-    driver_list = BeautifulSoup(HttpUtil.get(latest_version_url).text, features="lxml")
+    driver_list = BeautifulSoup(HttpUtil.get(local_version_url).text, features="lxml")
     filename_list = driver_list.find("pre").find_all("a")
 
     for s in filename_list:
@@ -87,7 +96,7 @@ def download_taobao_chromedriver():
         # 如果在文件名中找到系统平台名称
         if s.find(sys.platform) != -1:
             # 下载文件
-            HttpUtil.download_file(latest_version_url + s, None, s)
+            HttpUtil.download_file(local_version_url + s, None, s)
             FileUtil.zip_extract(s, None)
 
 
@@ -346,3 +355,8 @@ def selenium_attribute(url, get_html, element):
         driver.close()
         # 关闭浏览器并关闭chreomedriver进程
         driver.quit()
+
+
+if __name__ == '__main__':
+    # download_taobao_chromedriver()
+    download_chromedriver()
