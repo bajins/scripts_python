@@ -125,25 +125,35 @@ def get_fakenamegenerator(url, params):
     return data
 
 
-if __name__ == '__main__':
-    params = {
-        # 姓名命名的国家
-        "n": "us",
-        # 国家：ca、us
-        "c": "ca",
-        # 性别：random、male、female
-        "gen": "random",
-    }
-    get_fakenamegenerator("https://www.fakenamegenerator.com/index.php", params)
+def get_fakenamegenerator_index(params=None):
+    if params is None:
+        params = {
+            # 姓名命名的国家
+            "n": "us",
+            # 国家：ca、us
+            "c": "ca",
+            # 性别：random、male、female
+            "gen": "random",
+        }
+    return get_fakenamegenerator("https://www.fakenamegenerator.com/index.php", params)
 
-    params = {
-        "t": "country",
-        # 数组多选，最多5个
-        "n[]": "us",
-        # 数组多选，最多5个
-        "c[]": "us",
-        "gen": "78",
-        "age-min": "19",
-        "age-max": "32",
-    }
-    get_fakenamegenerator("https://www.fakenamegenerator.com/advanced.php", params)
+
+def get_fakenamegenerator_advanced(params=None):
+    if params is None:
+        params = {
+            "t": "country",
+            # 数组多选，最多5个
+            "n[]": "us",
+            # 数组多选，最多5个
+            "c[]": "us",
+            "gen": "78",
+            "age-min": "19",
+            "age-max": "32",
+        }
+    return get_fakenamegenerator("https://www.fakenamegenerator.com/advanced.php", params)
+
+
+if __name__ == '__main__':
+    get_fakenamegenerator_index()
+
+    get_fakenamegenerator_advanced()
