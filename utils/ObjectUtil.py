@@ -9,6 +9,8 @@
 # @Software: PyCharm
 import inspect
 import re
+from collections import OrderedDict
+from functools import reduce
 
 
 def get_object_method(genus):
@@ -117,3 +119,44 @@ def is_in_array(arg, array):
         if re.match("^.*" + a + ".*", arg):
             return True
     return False
+
+
+def remove_dict_list_duplicate(dict_list):
+    """
+    列表里的字典元素去重
+    :param dict_list: 字典列表
+    :return:
+    """
+    return reduce(lambda x, y: x if y in x else x + [y], [[], ] + dict_list)
+
+
+def remove_dict_list_on_duplicate(dict_list):
+    """
+    O(n)时间复杂度 列表里的字典元素去重
+    :param dict_list: 字典列表
+    :return:
+    """
+    seen = set()
+    new_dict_list = []
+    for dict in dict_list:
+        t_dict = {'res_model': dict['res_model'], 'res_id': dict['res_id']}
+        t_tup = tuple(t_dict.items())
+        if t_tup not in seen:
+            seen.add(t_tup)
+            new_dict_list.append(dict)
+    return new_dict_list
+
+
+def remove_ordered_dict_duplicate(dict_list, key):
+    """
+    列表里的字典元素去重
+
+    :param dict_list: 字典列表
+    :param key: 以哪个键排重
+    :return:
+    """
+    b = OrderedDict()
+    for item in dict_list:
+        # **item 这个语法是3.5以后的，以前版本dict(item, )
+        b.setdefault(item[key], {**item, })
+    return list(b.values())
