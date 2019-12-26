@@ -12,6 +12,7 @@ import time
 from threading import Timer
 
 import psutil
+from bs4 import BeautifulSoup
 
 import Constants
 from utils import ReptileUtil, HttpUtil, ThreadPool, DatabaseUtil, TranslationUtil
@@ -50,7 +51,7 @@ def download_images(url, page, directory):
     :return:
     """
     try:
-        html = ReptileUtil.bs(url + str(page), None)
+        html = BeautifulSoup(HttpUtil.get(url + str(page)).text, features="lxml")
         figure = html.find_all("figure")
         # 获取所有包含指定属性的标签
         page_all = html.find_all(lambda tag: tag.has_attr('original-title'))
@@ -59,7 +60,7 @@ def download_images(url, page, directory):
             image_id = label.attrs["data-wallpaper-id"]
 
             # 图片详情页
-            info_html = ReptileUtil.bs("https://wallhaven.cc/w/" + image_id, None)
+            info_html = BeautifulSoup(HttpUtil.get("https://wallhaven.cc/w/" + image_id).text, features="lxml")
             tags_html = info_html.find_all("a", {"class": "tagname", "rel": "tag"})
             # 图片的标签
             tags = ",".join([tag_html.text for tag_html in tags_html]).replace("'", "")
@@ -138,7 +139,7 @@ def get_tag(page):
     :param page: 页码
     :return:
     """
-    html = ReptileUtil.bs("https://wallhaven.cc/tags?page=" + str(page), None)
+    html = BeautifulSoup(HttpUtil.get("https://wallhaven.cc/tags?page=" + str(page)).text, features="lxml")
     tags_html = html.find_all("a", {"class": "sfw"})
     for tag_html in tags_html:
         url = tag_html.attrs["href"]

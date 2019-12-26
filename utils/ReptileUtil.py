@@ -22,19 +22,6 @@ from selenium.webdriver.support import expected_conditions
 from utils import HttpUtil, FileUtil
 
 
-def bs(url, data=None):
-    """
-    https://www.crummy.com/software/BeautifulSoup/bs4/doc.zh/#id9
-    使用BeautifulSoup库爬取数据，
-    解析器有：html.parser、lxml、xml、html5lib
-    推荐使用lxml作为解析器，速度快，容错能力强，效率高
-    :param url:
-    :param data:
-    :return:
-    """
-    return BeautifulSoup(HttpUtil.get(url=url, data=data).text, features="lxml")
-
-
 def download_chromedriver():
     """
     下载chrome驱动
@@ -43,7 +30,7 @@ def download_chromedriver():
     """
     # 获取版本号列表
     url = "http://chromedriver.storage.googleapis.com/"
-    result = bs(url, {"delimiter": "/", "prefix": ""})
+    result = BeautifulSoup(HttpUtil.get(url, {"delimiter": "/", "prefix": ""}).text, features="lxml")
     prefix = result.find_all("prefix")
     # 过滤
     # info = [s.extract() for s in prefix('prefix')]
@@ -57,7 +44,7 @@ def download_chromedriver():
     ver.sort(reverse=True)
 
     # 获取版本下面的文件列表
-    driver_list = bs(url, {"delimiter": "/", "prefix": ver[0]})
+    driver_list = BeautifulSoup(HttpUtil.get(url, {"delimiter": "/", "prefix": ver[0]}).text, features="lxml")
     filename_list = driver_list.find_all("key")
 
     for s in filename_list:
@@ -78,7 +65,7 @@ def download_taobao_chromedriver():
     """
     # 获取版本号列表
     url = "http://npm.taobao.org/mirrors/chromedriver/"
-    result = bs(url, None)
+    result = BeautifulSoup(HttpUtil.get(url).text, features="lxml")
     prefix = result.find("pre").find_all("a")
     # 过滤
     # info = [s.extract() for s in prefix('prefix')]
@@ -93,7 +80,7 @@ def download_taobao_chromedriver():
 
     latest_version_url = url + ver[0]
     # 获取版本下面的文件列表
-    driver_list = bs(latest_version_url, None)
+    driver_list = BeautifulSoup(HttpUtil.get(latest_version_url).text, features="lxml")
     filename_list = driver_list.find("pre").find_all("a")
 
     for s in filename_list:
@@ -196,6 +183,11 @@ def selenium_driver(url):
 
 def selenium_bs(url):
     """
+    https://www.crummy.com/software/BeautifulSoup/bs4/doc.zh/#id9
+    使用BeautifulSoup库爬取数据，
+    解析器有：html.parser、lxml、xml、html5lib
+    推荐使用lxml作为解析器，速度快，容错能力强，效率高
+
     使用selenium库打开一个链接并获取网页源码，
     再利用BeautifulSoup操作数据
     :param url:

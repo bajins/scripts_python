@@ -32,7 +32,7 @@ requests.packages.urllib3.disable_warnings()
 requests.adapters.DEFAULT_RETRIES = 5
 
 
-def get(url, data):
+def get(url, data=None):
     """
     get请求
     :param url:请求地址
@@ -42,7 +42,7 @@ def get(url, data):
     session = requests.sessions.Session()
     # 关闭多余的连接
     session.keep_alive = False
-    return session.get(url=url, params=data, headers=headers, verify=False, timeout=600)
+    return session.get(url, data, headers=headers, verify=False, timeout=600)
 
 
 def post(url, data):
@@ -52,7 +52,7 @@ def post(url, data):
     :param data:数据，map或dict格式
     :return:
     """
-    return requests.post(url=url, params=data, headers=headers, verify=False, timeout=600)
+    return requests.post(url, data, headers=headers, verify=False, timeout=600)
 
 
 def delete(url, data):

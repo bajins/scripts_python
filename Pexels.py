@@ -44,7 +44,8 @@ run_count = 0
 
 
 def download_latest_images(page, directory):
-    html = ReptileUtil.bs("https://www.pexels.com/zh-cn/new-photos?page=" + str(page), None)
+    html = BeautifulSoup(HttpUtil.get("https://www.pexels.com/zh-cn/new-photos?page=" + str(page)).text,
+                         features="lxml")
     articles = html.find_all("article")
     pages_html = html.find("div", {"class": "pagination"})
 
@@ -58,7 +59,8 @@ def download_latest_images(page, directory):
             download_url = article["data-photo-modal-image-download-link"]
             image_name = "pexels-photo-" + image_id + ".jpg"
 
-            info_html = ReptileUtil.bs("https://www.pexels.com/zh-cn/photo/" + image_id, None)
+            info_html = BeautifulSoup(HttpUtil.get("https://www.pexels.com/zh-cn/photo/" + image_id).text,
+                                      features="lxml")
             tags = info_html.find("meta", {"name": "keywords"}).attrs["content"].replace(" ", "").replace("'", "")
             if len(tags) > 0 and tags != "":
                 # 简繁转换
