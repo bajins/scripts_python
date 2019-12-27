@@ -90,6 +90,11 @@ def download_latest_images(page, directory):
         print("当前活跃线程数:", threading.activeCount())
 
 
+def run_command():
+    print(os.popen("rclone dedupe gdrive:/images --dedupe-mode newest").read())
+    threading.Timer(86400, run_command).start()
+
+
 if __name__ == '__main__':
     if not s3.is_table_exist("images"):
         # 获取自增的主键值：SELECT last_insert_rowid()
@@ -112,3 +117,4 @@ if __name__ == '__main__':
         res = res[0][0]
 
     download_latest_images(int(res), "images")
+    run_command()

@@ -140,6 +140,11 @@ def get_tag(page):
         get_tag(page + 1)
 
 
+def run_command():
+    print(os.popen("rclone --max-size 100k delete onedrive:/images").read())
+    threading.Timer(86400, run_command).start()
+
+
 if __name__ == '__main__':
     if not s3.is_table_exist("images"):
         # 获取自增的主键值：SELECT last_insert_rowid()
@@ -163,3 +168,4 @@ if __name__ == '__main__':
     else:
         res = res[0][0]
     download_latest_images(int(res), "images")
+    run_command()
