@@ -34,7 +34,13 @@ def download_images(url, page, directory):
     try:
         html = BeautifulSoup(HttpUtil.get(url + str(page)).text, features="lxml")
         figure = html.find_all("figure")
-        print(page, len(figure))
+        # 获取所有包含指定属性的标签
+        page_all = html.find_all(lambda tag: tag.has_attr('original-title'))
+        page_total = int(page_all[len(page_all) - 1].text)
+        print(page, len(figure), page_total)
+        if page > page_total:
+            page = 1
+            raise ValueError("page超出范围")
 
         dir_size = FileUtil.count_dir_size(directory)
         if dir_size >= 1073741824:
@@ -69,21 +75,17 @@ def download_images(url, page, directory):
                 done = ThreadPool.pool.submit(HttpUtil.download_file, download_url, directory, image_name)
                 # done.add_done_callback(ThreadPool.thread_call_back)
 
-        # 获取所有包含指定属性的标签
-        page_all = html.find_all(lambda tag: tag.has_attr('original-title'))
-
         global run_count
         run_count += 1
 
-        # 如果获取到的页数大于0，并且内存占用率小于80%时
-        if len(page_all) > 0 and psutil.virtual_memory().percent < 80 and run_count <= 10:
-            page_total = page_all[len(page_all) - 1].text
-            # 如果不是最后一页，那么就继续下载下一页
-            if page != page_total:
-                download_images(url, page + 1, directory)
+        # 如果获取到的页数大于0不是最后一页，并且内存占用率小于80%时
+        if len(page_all) > 0 and page <= page_total and psutil.virtual_memory().percent < 80 and run_count <= 10:
+            download_images(url, page + 1, directory)
         else:
             if len(page_all) > 0:
                 page += 1
+            if page > page_total:
+                page = 1
             run_count = 0
 
     except Exception as e:
