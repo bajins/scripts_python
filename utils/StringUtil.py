@@ -129,3 +129,8 @@ def random_string(length=16):
     """
     str_list = [random.choice(string.digits + string.ascii_letters) for i in range(length)]
     return ''.join(str_list)
+
+
+if __name__ == '__main__':
+    print(random.randint(1, 10))
+    print(random.randint(2000, 2017))

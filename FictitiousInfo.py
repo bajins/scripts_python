@@ -100,10 +100,15 @@ def get_haoweichi(url):
 def get_fakenamegenerator(url, params):
     result = BeautifulSoup(requests.get(url, params, headers=headers, timeout=600).text, features="lxml")
     parent = result.select("#details > div.content > div.info > div")[0]
+
+    # 替换<br/>为-
+    _address = parent.select("div.address > div")[0].get_text("-", strip=True).split(",")
+    address = _address[0].split("-")
     data = {
         "full_name": parent.select("div.address > h3")[0].text,
-        # 去掉开头或者结尾空白字符
-        "address": re.sub(r"^\s+|\s+$", "", parent.select("div.address > div")[0].text, 0, re.I)
+        "address": address[0],
+        "city": address[1],
+        "zip_code": _address[1],
     }
     extras = parent.find_all("dl")
     for extra in extras:
@@ -114,13 +119,20 @@ def get_fakenamegenerator(url, params):
         name = re.sub(r"[^a-z\d\s]", "", dt.text, 0, re.I)
         # 替换空格并转小写
         name = re.sub(r"\s", "_", name, 0, re.I).lower()
-        if name == "qr_code":
-            continue
         if name == "email_address":
             email = re.sub(r"\s.*$", "", dd.text, 0, re.I)
             href = dd.find("a").attrs["href"]
             content = f"{email} {href}"
-        data[name] = content
+        if name == "phone":
+            if content.find('-') == -1:
+                data["area_code"] = ""
+            else:
+                data["area_code"] = content[:content.find('-')]
+            content = content[content.find('-') + 1:]
+        if name == "qr_code":
+            continue
+        # 去掉开头或者结尾空白字符
+        data[name] = re.sub(r"^\s+|\s+$", "", content, 0, re.I)
 
     return data
 
@@ -156,4 +168,4 @@ def get_fakenamegenerator_advanced(params=None):
 if __name__ == '__main__':
     print(get_fakenamegenerator_index())
 
-    print(get_fakenamegenerator_advanced())
+    # print(get_fakenamegenerator_advanced())

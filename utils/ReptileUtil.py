@@ -117,8 +117,11 @@ def selenium_driver(url, debug=False):
 
     # chrome选项
     options = webdriver.ChromeOptions()
+    options.add_argument(f'--user-agent={HttpUtil.USER_AGENT}')
+    # 窗口最大化
+    options.add_argument("--start-maximized")
 
-    if debug:
+    if not debug:
         # 设置chrome浏览器无界面模式
         options.add_argument('--headless')
         # 谷歌文档提到需要加上这个属性来规避bug
@@ -131,28 +134,38 @@ def selenium_driver(url, debug=False):
         options.add_argument('window-size=1600x900')
         # 禁止加载所有插件，可以增加速度
         options.add_argument('-–disable-plugins')
+        # 禁用扩展
         options.add_argument('--disable-extensions')
         # 隐藏滚动条, 应对一些特殊页面
         options.add_argument('--hide-scrollbars')
-
-        options.add_argument(f'--user-agent={HttpUtil.USER_AGENT}')
-
-        # prefs = {
-        #     "profile.managed_default_content_settings.images": 2,
-        #     'profile.default_content_settings.popups': 0,
-        #     'download.default_directory': r'e:\music',
-        #     'download.prompt_for_download': False,
-        #     'download.directory_upgrade': True,
-        #     'safebrowsing.enabled': False,
-        #     'safebrowsing.disable_download_protection': True,
-        #     "profile.default_content_setting_values.automatic_downloads": 0
-        # }
-        # options.add_experimental_option('prefs', prefs)
-
-        # 这种方式在Headless的模式下是生效的， 非Headless模式下也是生效的。
-        # 不加载图片, 提升速度
+        # 这种方式在Headless的模式下是生效的， 非Headless模式下也是生效的。不加载图片, 提升速度
         # options.add_argument('blink-settings=imagesEnabled=false')
         options.add_argument('-–disable-images')
+        # 手动指定使用的浏览器位置
+        # options.binary_location = r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe"
+        # 添加crx插件
+        # options.add_extension('d:\crx\AdBlock_v2.17.crx')
+        # 禁用JavaScript
+        # options.add_argument("--disable-javascript")
+        # 设置开发者模式启动，该模式下webdriver属性为正常值
+        # options.add_experimental_option('excludeSwitches', ['enable-automation'])
+
+        # 用于定义下载不弹窗和默认下载地址（默认下载地址还要再后面的commands里启动，默认是不开启的）
+        prefs = {
+            "profile.managed_default_content_settings.images": 2,
+            'profile.default_content_settings.popups': 0,
+            'download.default_directory': 'D:\\',
+            'download.prompt_for_download': False,
+            'download.directory_upgrade': True,
+            'safebrowsing.enabled': False,
+            'safebrowsing.disable_download_protection': True,
+            'profile.default_content_setting_values': {
+                # 禁用浏览器弹窗
+                'notifications': 2,
+                "automatic_downloads": 0
+            }
+        }
+        options.add_experimental_option('prefs', prefs)
 
     capa = DesiredCapabilities.CHROME
     # 懒加载模式，不等待页面加载完毕
@@ -171,11 +184,11 @@ def selenium_driver(url, debug=False):
     # 禁用浏览器下载
     # https://github.com/TheBrainFamily/chimpy/issues/108#issuecomment-512836924
     # allow自动、deny禁止、default默认
-    params = {'cmd': 'Page.setDownloadBehavior', 'params': {'behavior': 'deny'}}
+    params = {'cmd': 'Page.setDownloadBehavior', 'params': {'behavior': 'deny', 'downloadPath': "D:\\"}}
     driver.execute("send_command", params)
 
     # 隐式等待是一个全局设置，设置后所有的元素定位都会等待给定的时间，
-    # 直到元素出现为止，等待规定时间元素没出现就报错
+    # 直到元素出现为止，等待规定时间元素没出现就报错，秒为单位
     # driver.implicitly_wait(10)
 
     # 设置页面加载超时
