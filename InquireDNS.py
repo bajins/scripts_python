@@ -131,20 +131,3 @@ def get_short_time_mail_dns():
             print("错误：", e)
 
     update_hosts(new_hosts)
-
-
-if __name__ == '__main__':
-    driver = ReptileUtil.selenium_driver(Constants.CHINAZ_DNS, True)
-    # driver.set_page_load_timeout(20)
-    input_element = driver.find_element_by_xpath('//*[@id="host"]')
-    # 传入值，输入的内容
-    input_element.send_keys("github.com")
-    # 提交
-    input_element.submit()
-    # driver.set_script_timeout(60)
-    # WebDriverWait(driver, 120).until(expected_conditions.presence_of_element_located(
-    #     (By.XPATH, "//*[@class='ReListCent ReLists bor-b1s clearfix']")))
-    lis = driver.find_elements_by_xpath("//*[@class='ReListCent ReLists bor-b1s clearfix']")
-    print(len(lis))
-    for li in lis:
-        print(li.text.split("\n"), li.text == "")
