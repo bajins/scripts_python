@@ -18,20 +18,18 @@ from bs4 import BeautifulSoup
 import Constants
 from utils import ReptileUtil, HttpUtil, ThreadPool, DatabaseUtil
 
-save_dir = "images"
-
 s3 = DatabaseUtil.Sqlite3(os.path.join(Constants.DATA_PATH, "pexels"))
 
 run_count = 0
 
 
 def download_latest_images(page, directory):
-    html = BeautifulSoup(HttpUtil.get("https://www.pexels.com/zh-cn/new-photos?page=" + str(page)).text,
-                         features="lxml")
-    articles = html.find_all("article")
-    pages_html = html.find("div", {"class": "pagination"})
-
     try:
+        html = BeautifulSoup(HttpUtil.get("https://www.pexels.com/zh-cn/new-photos?page=" + str(page)).text,
+                             features="lxml")
+        articles = html.find_all("article")
+        print(articles)
+
         for article in articles:
             # 图片id
             image_id = article["data-photo-modal-medium-id"]
@@ -61,6 +59,8 @@ def download_latest_images(page, directory):
                 done = ThreadPool.pool.submit(HttpUtil.download_file, download_url, directory, image_name)
                 # done.add_done_callback(ThreadPool.thread_call_back)
 
+        pages_html = html.find("div", {"class": "pagination"})
+
         global run_count
         run_count += 1
 
@@ -71,15 +71,14 @@ def download_latest_images(page, directory):
             # 如果不是最后一页，那么就继续下载下一页
             if page != page_total:
                 download_latest_images(page + 1, directory)
-
-        elif len(pages_html) == 0:
-            run_count = 0
-            Timer(400, download_latest_images, (page, directory)).start()
         else:
+            if len(pages_html) > 0:
+                page += 1
             run_count = 0
-            Timer(400, download_latest_images, (page + 1, directory)).start()
+
     except Exception as e:
         print(e)
+    finally:
         Timer(400, download_latest_images, (page, directory)).start()
 
 
@@ -104,4 +103,4 @@ if __name__ == '__main__':
     else:
         res = res[0][0]
 
-    download_latest_images(int(res), save_dir)
+    download_latest_images(int(res), "images")

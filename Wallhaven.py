@@ -17,8 +17,6 @@ from bs4 import BeautifulSoup
 import Constants
 from utils import ReptileUtil, HttpUtil, ThreadPool, DatabaseUtil, TranslationUtil
 
-save_dir = "images"
-
 s3 = DatabaseUtil.Sqlite3(os.path.join(Constants.DATA_PATH, "wallhaven"))
 
 run_count = 0
@@ -35,8 +33,7 @@ def download_images(url, page, directory):
     try:
         html = BeautifulSoup(HttpUtil.get(url + str(page)).text, features="lxml")
         figure = html.find_all("figure")
-        # 获取所有包含指定属性的标签
-        page_all = html.find_all(lambda tag: tag.has_attr('original-title'))
+        print(figure)
 
         for label in figure:
             image_id = label.attrs["data-wallpaper-id"]
@@ -67,6 +64,9 @@ def download_images(url, page, directory):
                 done = ThreadPool.pool.submit(HttpUtil.download_file, download_url, directory, image_name)
                 # done.add_done_callback(ThreadPool.thread_call_back)
 
+        # 获取所有包含指定属性的标签
+        page_all = html.find_all(lambda tag: tag.has_attr('original-title'))
+
         global run_count
         run_count += 1
 
@@ -76,16 +76,14 @@ def download_images(url, page, directory):
             # 如果不是最后一页，那么就继续下载下一页
             if page != page_total:
                 download_images(url, page + 1, directory)
-
-        elif len(page_all) == 0:
-            run_count = 0
-            Timer(400, download_images, (url, page, directory)).start()
         else:
+            if len(page_all) > 0:
+                page += 1
             run_count = 0
-            Timer(400, download_images, (url, page + 1, directory)).start()
 
     except Exception as e:
         print(e)
+    finally:
         Timer(400, download_images, (url, page, directory)).start()
 
 
@@ -154,4 +152,4 @@ if __name__ == '__main__':
         res = 1
     else:
         res = res[0][0]
-    download_latest_images(int(res), save_dir)
+    download_latest_images(int(res), "images")
