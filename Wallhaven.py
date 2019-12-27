@@ -9,8 +9,7 @@
 # @Software: PyCharm
 import os
 import platform
-import time
-from threading import Timer
+import threading
 
 import psutil
 from bs4 import BeautifulSoup
@@ -92,7 +91,8 @@ def download_images(url, page, directory):
     except Exception as e:
         print(e)
     finally:
-        Timer(400, download_images, (url, page, directory)).start()
+        threading.Timer(400, download_images, (url, page, directory)).start()
+        print("当前活跃线程数:", threading.activeCount())
 
 
 def download_tag_images(tag_id, page, directory):

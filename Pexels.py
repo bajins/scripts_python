@@ -8,8 +8,7 @@
 # @Package: 
 # @Software: PyCharm
 import os
-import time, sched
-from threading import Timer
+import threading
 
 import psutil
 import zhconv
@@ -85,7 +84,8 @@ def download_latest_images(page, directory):
     except Exception as e:
         print(e)
     finally:
-        Timer(400, download_latest_images, (page, directory)).start()
+        threading.Timer(400, download_latest_images, (page, directory)).start()
+        print("当前活跃线程数:", threading.activeCount())
 
 
 if __name__ == '__main__':
