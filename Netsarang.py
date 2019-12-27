@@ -123,8 +123,16 @@ def download(product):
     # 请求token链接地址获取下载链接
     # bs = ReptileUtil.selenium_bs(href)
     # href = bs.find("a", {"target": "download_frame"})["href"]
-    href = ReptileUtil.selenium_attribute(href, "a[target='download_frame']", "href")
 
+    try:
+        driver = ReptileUtil.selenium_driver(href)
+        driver.implicitly_wait(10)
+        href = driver.find_element_by_css_selector("a[target='download_frame']").get_attribute("href")
+    finally:
+        # 关闭当前窗口。
+        driver.close()
+        # 关闭浏览器并关闭chreomedriver进程
+        driver.quit()
     href = href.replace(".exe", "r.exe")
 
     # 把产品信息存储到变量

@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8 -*-
+#
 # @Author : bajins www.bajins.com
 # @File : ReptileUtil.py
 # @Version: 1.0.0
@@ -7,7 +8,12 @@
 # @Project: tool-gui-python
 # @Package: 
 # @Software: PyCharm
-
+"""
+https://www.crummy.com/software/BeautifulSoup/bs4/doc.zh/#id9
+使用BeautifulSoup库爬取数据，
+解析器有：html.parser、lxml、xml、html5lib
+推荐使用lxml作为解析器，速度快，容错能力强，效率高
+"""
 
 import os
 import platform
@@ -118,7 +124,7 @@ def selenium_driver(url, debug=False):
     # chrome选项
     options = webdriver.ChromeOptions()
     options.add_argument(f'--user-agent={HttpUtil.USER_AGENT}')
-    # 窗口最大化
+    # 启动即窗口最大化
     options.add_argument("--start-maximized")
 
     if not debug:
@@ -174,11 +180,6 @@ def selenium_driver(url, debug=False):
     # 打开浏览器,executable_path指定驱动位置
     driver = webdriver.Chrome(chrome_options=options, executable_path=path, desired_capabilities=capa)
 
-    # 最大化浏览器
-    # driver.maximize_window()
-    # 最小化浏览器
-    # driver.minimize_window()
-
     # 向Selenium Webwdriver添加对Chrome "send_command"的支持
     driver.command_executor._commands["send_command"] = ("POST", '/session/$sessionId/chromium/send_command')
     # 禁用浏览器下载
@@ -186,6 +187,11 @@ def selenium_driver(url, debug=False):
     # allow自动、deny禁止、default默认
     params = {'cmd': 'Page.setDownloadBehavior', 'params': {'behavior': 'deny', 'downloadPath': "D:\\"}}
     driver.execute("send_command", params)
+
+    # 在启动浏览器并打开页面后，最大化浏览器
+    # driver.maximize_window()
+    # 在启动浏览器并打开页面后，最小化浏览器
+    # driver.minimize_window()
 
     # 隐式等待是一个全局设置，设置后所有的元素定位都会等待给定的时间，
     # 直到元素出现为止，等待规定时间元素没出现就报错，秒为单位
@@ -200,174 +206,6 @@ def selenium_driver(url, debug=False):
     driver.get(url)
 
     return driver
-
-
-def selenium_bs(url):
-    """
-    https://www.crummy.com/software/BeautifulSoup/bs4/doc.zh/#id9
-    使用BeautifulSoup库爬取数据，
-    解析器有：html.parser、lxml、xml、html5lib
-    推荐使用lxml作为解析器，速度快，容错能力强，效率高
-
-    使用selenium库打开一个链接并获取网页源码，
-    再利用BeautifulSoup操作数据
-    :param url:
-    :return:
-    """
-    try:
-        driver = selenium_driver(url)
-        # 获取网页源代码
-        html = driver.page_source
-        # 使用BeautifulSoup创建html代码的BeautifulSoup实例
-        return BeautifulSoup(html, features="html.parser")
-    finally:
-        # 关闭当前窗口。
-        driver.close()
-        # 关闭浏览器并关闭chreomedriver进程
-        driver.quit()
-
-
-def selenium_bs_input(url, input_el, input_text):
-    """
-    使用selenium库打开一个链接并获取网页源码，
-    再利用BeautifulSoup操作数据
-    :param url:
-    :param input_el: input标签的id，name或class
-    :param input_text: 输入内容
-    :return:
-    """
-    try:
-        driver = selenium_driver(url)
-        # n次点击加载更多
-        # for i in range(0, 5):
-        #     # 点击加载更多
-        #     driver.find_element_by_class_name("home-news-footer").click()
-        #     # 找到加载更多按钮，点击
-        #     driver.find_element(By.LINK_TEXT, "加载更多").click()
-
-        # 使用selenium通过id，name或class的方式来获取到这个input标签
-        input_element = driver.find_element_by_class_name(input_el)
-        # 传入值，输入的内容
-        input_element.send_keys(input_text)
-        # 提交
-        input_element.submit()
-
-        # 隐式等待是一个全局设置，设置后所有的元素定位都会等待给定的时间，
-        # 直到元素出现为止，等待规定时间元素没出现就报错
-        driver.implicitly_wait(10)
-
-        # 获取网页源代码
-        html = driver.page_source
-        # 使用BeautifulSoup创建html代码的BeautifulSoup实例
-        return BeautifulSoup(html, features="html.parser")
-    finally:
-        # 关闭当前窗口。
-        driver.close()
-        # 关闭浏览器并关闭chreomedriver进程
-        driver.quit()
-
-
-def selenium_bs_inputs(url, inputs, click_btn):
-    """
-    使用selenium库打开一个链接并获取网页源码，
-    再利用BeautifulSoup操作数据
-    :param url:       访问链接
-    :param inputs:    input标签和内容{元素选择器:内容}
-    :param click_btn: 点击提交的按钮
-    :return:
-    """
-    try:
-        driver = selenium_driver(url)
-        # 使用selenium通过id，name或class的方式来获取到这个input标签
-        for key, value in inputs.items():
-            # 查找元素，传入值（输入的内容）
-            driver.find_element_by_css_selector(key).send_keys(value)
-
-        # 提交
-        # driver.find_element_by_class_name(click_btn).click()
-        # driver.find_element_by_xpath(click_btn).click()
-        driver.find_element_by_css_selector(click_btn).click()
-
-        # https://zhuanlan.zhihu.com/p/61536685
-        # 显式等待设置一个等待时间，直到这个元素出现就停止等待，如果没出现就抛出异常
-        # element = WebDriverWait(driver, 60).until(
-        #     expected_conditions.presence_of_element_located((By.CSS_SELECTOR, click_btn))
-        # )
-        # element.click()
-
-        # 获取网页源代码
-        html = driver.page_source
-
-        # 使用BeautifulSoup创建html代码的BeautifulSoup实例
-        return BeautifulSoup(html, features="html.parser")
-    finally:
-        # 关闭当前窗口。
-        driver.close()
-        # 关闭浏览器并关闭chreomedriver进程
-        driver.quit()
-
-
-def selenium_inputs_attribute(url, inputs, click_btn, get_html, element):
-    """
-    使用selenium库打开一个链接并获取网页源码，
-    再利用BeautifulSoup操作数据
-    :param element:    html的属性
-    :param get_html:   查找要获取的html元素
-    :param url:        访问链接
-    :param inputs:     input标签和内容{元素选择器:内容}
-    :param click_btn:  点击提交的按钮
-    :return:
-    """
-    try:
-        driver = selenium_driver(url)
-        # 使用selenium通过id，name或class的方式来获取到这个input标签
-        for key, value in inputs.items():
-            # 查找元素，传入值（输入的内容）
-            driver.find_element_by_css_selector(key).send_keys(value)
-
-        # 提交
-        # driver.find_element_by_xpath(click_btn).click()
-        driver.find_element_by_css_selector(click_btn).click()
-        # driver.find_element_by_class_name(click_btn).click()
-
-        # 隐式等待是一个全局设置，设置后所有的元素定位都会等待给定的时间，
-        # 直到元素出现为止，等待规定时间元素没出现就报错
-        driver.implicitly_wait(10)
-
-        # 获取网页源代码，innerHTML
-        return driver.find_element_by_css_selector(get_html).get_attribute(element)
-    finally:
-        # 关闭当前窗口。
-        driver.close()
-        # 关闭浏览器并关闭chreomedriver进程
-        driver.quit()
-
-
-def selenium_attribute(url, get_html, element):
-    """
-    使用selenium库打开一个链接并获取网页源码，
-    再利用BeautifulSoup操作数据
-    :param element:    html的属性
-    :param get_html:   查找要获取的html元素
-    :param url:        访问链接
-    :return:
-    """
-    try:
-        driver = selenium_driver(url)
-
-        # 隐式等待是一个全局设置，设置后所有的元素定位都会等待给定的时间，
-        # 直到元素出现为止，等待规定时间元素没出现就报错
-        driver.implicitly_wait(10)
-
-        # 获取网页源代码
-        # driver.find_element_by_css_selector(get_html).text
-        # innerText，textContent，innerHTML
-        return driver.find_element_by_css_selector(get_html).get_attribute(element)
-    finally:
-        # 关闭当前窗口。
-        driver.close()
-        # 关闭浏览器并关闭chreomedriver进程
-        driver.quit()
 
 
 if __name__ == '__main__':

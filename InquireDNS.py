@@ -16,6 +16,10 @@ import re
 import shutil
 import time
 
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions
+from selenium.webdriver.support.wait import WebDriverWait
+
 import Constants
 from utils import HttpUtil, FileUtil, StringUtil, ObjectUtil, ReptileUtil
 
@@ -25,19 +29,32 @@ def get_chinaz_ip():
     通过chinaz查询dns
     :return:
     """
-    for domain in Constants.GITHUB_DOMAIN:
-        try:
-            soup = ReptileUtil.selenium_bs(Constants.CHINAZ_DNS, "w360", domain)
-            lis = soup.find_all("li", class_="ReLists")
-            if lis is not None:
+    try:
+        for domain in Constants.GITHUB_DOMAIN:
+            try:
+                driver = ReptileUtil.selenium_driver(Constants.CHINAZ_DNS)
+                # driver.set_page_load_timeout(20)
+                input_element = driver.find_element_by_xpath('//*[@id="host"]')
+                # 传入值，输入的内容
+                input_element.send_keys(domain)
+                # 提交
+                input_element.submit()
+                # driver.set_script_timeout(60)
+                # https://zhuanlan.zhihu.com/p/61536685
+                # WebDriverWait(driver, 120).until(expected_conditions.presence_of_element_located(
+                #     (By.XPATH, "//*[@class='ReListCent ReLists bor-b1s clearfix']")))
+                lis = driver.find_elements_by_xpath("//*[@class='ReListCent ReLists bor-b1s clearfix']")
                 for li in lis:
-                    ip = li.find(class_="w60-0").string
-                    if not ip == "-" and ip is not None:
-                        addr = li.find(class_="w23-0").string
-                        ttl = li.find(class_="w14-0").string
-                        print(addr, ip, ttl, domain)
-        except Exception as e:
-            print(e)
+                    if not li.text == "":
+                        li_split = li.text.split("\n")
+                        print(li_split[1], li_split[3])
+            except Exception as e:
+                print(e)
+    finally:
+        # 关闭当前窗口。
+        driver.close()
+        # 关闭浏览器并关闭chreomedriver进程
+        driver.quit()
 
 
 def delete_dns(dns):
@@ -114,3 +131,20 @@ def get_short_time_mail_dns():
             print("错误：", e)
 
     update_hosts(new_hosts)
+
+
+if __name__ == '__main__':
+    driver = ReptileUtil.selenium_driver(Constants.CHINAZ_DNS, True)
+    # driver.set_page_load_timeout(20)
+    input_element = driver.find_element_by_xpath('//*[@id="host"]')
+    # 传入值，输入的内容
+    input_element.send_keys("github.com")
+    # 提交
+    input_element.submit()
+    # driver.set_script_timeout(60)
+    # WebDriverWait(driver, 120).until(expected_conditions.presence_of_element_located(
+    #     (By.XPATH, "//*[@class='ReListCent ReLists bor-b1s clearfix']")))
+    lis = driver.find_elements_by_xpath("//*[@class='ReListCent ReLists bor-b1s clearfix']")
+    print(len(lis))
+    for li in lis:
+        print(li.text.split("\n"), li.text == "")
