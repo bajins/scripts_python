@@ -26,6 +26,21 @@ run_count = 0
 
 
 def download_latest_images(page, directory):
+    if not s3.is_table_exist("images"):
+        # 获取自增的主键值：SELECT last_insert_rowid()
+        s3.execute_commit("""
+            CREATE TABLE images (
+                id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                image_id TEXT NOT NULL,
+                suffix TEXT NOT NULL,
+                url TEXT NOT NULL,
+                type TEXT,
+                page TEXT,
+                tags TEXT,
+                create_time TEXT DEFAULT (DATETIME('NOW', 'LOCALTIME')),
+                modify_time TEXT
+            )""")
+
     html = BeautifulSoup(HttpUtil.get("https://www.pexels.com/zh-cn/new-photos?page=" + str(page)).text,
                          features="lxml")
     articles = html.find_all("article")
@@ -39,7 +54,7 @@ def download_latest_images(page, directory):
             # image_org_size = article["data-photo-modal-download-value-original"]
             # 图片下载链接
             download_url = article["data-photo-modal-image-download-link"]
-            image_name = "pexels-photo-" + image_id + ".jpg"
+            image_name = f"pexels-photo-{image_id}.jpg"
 
             info_html = BeautifulSoup(HttpUtil.get("https://www.pexels.com/zh-cn/photo/" + image_id).text,
                                       features="lxml")
@@ -48,22 +63,18 @@ def download_latest_images(page, directory):
                 # 简繁转换
                 tags = zhconv.convert(tags[:len(tags) - 7], 'zh-cn')
 
+            s3.execute_commit(f"""
+            INSERT OR IGNORE INTO images(image_id,suffix,url,type,page,tags) 
+            VALUES('{image_id}','{download_url[download_url.rind(".") - 1:]}','{download_url}','latest','{page}','{tags}')
+            """)
             # dl = info_html.find(lambda tag: tag.has_attr('data-id') and tag.has_attr('href')).attrs["href"]
             # dl = info_html.find(lambda tag: tag.has_attr('data-id') and tag.has_attr('data-url')).attrs["data-url"]
 
             # 判断文件是否存在
-            # if not os.path.exists(name):
-            if not os.path.isfile(os.path.join(directory, image_name)):
+            if not os.path.exists(os.path.join(directory, image_name)):
                 # 每张图片启用单个线程下载
                 done = ThreadPool.pool.submit(HttpUtil.download_file, download_url, directory, image_name)
                 # done.add_done_callback(ThreadPool.thread_call_back)
-
-            suffix = download_url[len(download_url) - 3:]
-
-            s3.execute_commit(f"""
-            INSERT OR IGNORE INTO images(image_id,suffix,url,type,page,tags) 
-            VALUES('{image_id}','{suffix}','{download_url}','latest','{page}','{tags}')
-            """)
 
         global run_count
         run_count += 1
@@ -88,21 +99,6 @@ def download_latest_images(page, directory):
 
 
 if __name__ == '__main__':
-    if not s3.is_table_exist("images"):
-        # 获取自增的主键值：SELECT last_insert_rowid()
-        row = s3.execute_commit("""
-                        CREATE TABLE images (
-                            id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-                            image_id TEXT NOT NULL,
-                            suffix TEXT NOT NULL,
-                            url TEXT NOT NULL,
-                            type TEXT,
-                            page TEXT,
-                            tags TEXT,
-                            create_time TEXT DEFAULT (DATETIME('NOW', 'LOCALTIME')),
-                            modify_time TEXT
-                        )""")
-
     res = s3.select("SELECT page from images where type='latest' order by id desc limit 1")
     if len(res) == 0:
         res = 1

@@ -32,6 +32,20 @@ def download_images(url, page, directory):
     :param directory: 文件存放目录
     :return:
     """
+    if not s3.is_table_exist("images"):
+        # 获取自增的主键值：SELECT last_insert_rowid()
+        s3.execute_commit("""
+            CREATE TABLE images (
+                id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                image_id TEXT NOT NULL,
+                suffix TEXT NOT NULL,
+                url TEXT NOT NULL,
+                type TEXT,
+                page TEXT,
+                tags TEXT,
+                create_time TEXT DEFAULT (DATETIME('NOW', 'LOCALTIME')),
+                modify_time TEXT
+            )""")
     try:
         html = BeautifulSoup(HttpUtil.get(url + str(page)).text, features="lxml")
         figure = html.find_all("figure")
@@ -53,6 +67,11 @@ def download_images(url, page, directory):
             if len(download_url) <= 0 and download_url == "":
                 raise ConnectionError("获取下载链接失败")
 
+            s3.execute_commit(f"""
+            INSERT OR IGNORE INTO images(image_id,suffix,url,type,page,tags) 
+            VALUES('{image_id}','{download_url[download_url.rind(".") - 1:]}','{download_url}','latest','{page}','{tags}')
+            """)
+
             image_name = download_url.split("/")
             image_name = image_name[len(image_name) - 1]
             # 判断文件是否存在
@@ -61,13 +80,6 @@ def download_images(url, page, directory):
                 # 每张图片启用单个线程下载
                 done = ThreadPool.pool.submit(HttpUtil.download_file, download_url, directory, image_name)
                 # done.add_done_callback(ThreadPool.thread_call_back)
-
-            suffix = download_url[len(download_url) - 3:]
-
-            s3.execute_commit(f"""
-            INSERT OR IGNORE INTO images(image_id,suffix,url,type,page,tags) 
-            VALUES('{image_id}','{suffix}','{download_url}','latest','{page}','{tags}')
-            """)
 
         global run_count
         run_count += 1
@@ -99,8 +111,7 @@ def download_tag_images(tag_id, page, directory):
     :param directory: 文件保存的目录
     :return:
     """
-    url = "https://wallhaven.cc/search?q=" + tag_id + "&page="
-    download_images(url, page, directory)
+    download_images(f"https://wallhaven.cc/search?q={tag_id}&page=", page, directory)
 
 
 def download_latest_images(page, directory):
@@ -110,8 +121,7 @@ def download_latest_images(page, directory):
     :param directory: 文件保存的目录
     :return:
     """
-    url = "https://wallhaven.cc/latest?page="
-    download_images(url, page, directory)
+    download_images("https://wallhaven.cc/latest?page=", page, directory)
 
 
 def get_tag(page):
@@ -120,7 +130,7 @@ def get_tag(page):
     :param page: 页码
     :return:
     """
-    html = BeautifulSoup(HttpUtil.get("https://wallhaven.cc/tags?page=" + str(page)).text, features="lxml")
+    html = BeautifulSoup(HttpUtil.get(f"https://wallhaven.cc/tags?page={str(page)}").text, features="lxml")
     tags_html = html.find_all("a", {"class": "sfw"})
     for tag_html in tags_html:
         url = tag_html.attrs["href"]
@@ -137,21 +147,6 @@ def get_tag(page):
 
 
 if __name__ == '__main__':
-    if not s3.is_table_exist("images"):
-        # 获取自增的主键值：SELECT last_insert_rowid()
-        row = s3.execute_commit("""
-                    CREATE TABLE images (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-                        image_id TEXT NOT NULL,
-                        suffix TEXT NOT NULL,
-                        url TEXT NOT NULL,
-                        type TEXT,
-                        page TEXT,
-                        tags TEXT,
-                        create_time TEXT DEFAULT (DATETIME('NOW', 'LOCALTIME')),
-                        modify_time TEXT
-                    )""")
-
     # get_tag(1)
     # download_tag_images("id%3A222", 3, "images")
 
