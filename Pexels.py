@@ -65,7 +65,7 @@ def download_latest_images(page, directory):
 
             s3.execute_commit(f"""
             INSERT OR IGNORE INTO images(image_id,suffix,url,type,page,tags) 
-            VALUES('{image_id}','{download_url[download_url.rind(".") - 1:]}','{download_url}','latest','{page}','{tags}')
+            VALUES('{image_id}','{download_url[download_url.rfind(".") + 1:]}','{download_url}','latest','{page}','{tags}')
             """)
             # dl = info_html.find(lambda tag: tag.has_attr('data-id') and tag.has_attr('href')).attrs["href"]
             # dl = info_html.find(lambda tag: tag.has_attr('data-id') and tag.has_attr('data-url')).attrs["data-url"]
