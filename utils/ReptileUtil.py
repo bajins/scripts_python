@@ -42,7 +42,6 @@ def get_local_version(prefix):
 
     for s in prefix:
         version = s.text
-        # 判断如果全是字母就不是版本号
         if version.split(".")[0] == local_version:
             break
 

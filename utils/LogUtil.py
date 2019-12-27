@@ -41,6 +41,7 @@ class Singleton:
     def cls(self, cls):
         self.__cls = cls
 
+
 # 如需打印不同路径的日志（运行日志、审计日志），则不能使用单例模式（注释或删除此行）。此外，还需设定参数name。
 @Singleton
 class Logger:
@@ -60,9 +61,8 @@ class Logger:
             # 设置set_level为None，自动获取当前运行模式
             set_level = self._exec_type()
         self.__logger = logging.getLogger(name)
-        self.setLevel(
-            # 设置日志级别
-            getattr(logging, set_level.upper()) if hasattr(logging, set_level.upper()) else logging.INFO)
+        # 设置日志级别
+        self.setLevel(getattr(logging, set_level.upper()) if hasattr(logging, set_level.upper()) else logging.INFO)
         # 创建日志目录
         if not os.path.exists(log_path):
             os.makedirs(log_path)

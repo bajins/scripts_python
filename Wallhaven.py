@@ -8,6 +8,7 @@
 # @Package: 
 # @Software: PyCharm
 import os
+import platform
 import time
 from threading import Timer
 
@@ -15,7 +16,7 @@ import psutil
 from bs4 import BeautifulSoup
 
 import Constants
-from utils import ReptileUtil, HttpUtil, ThreadPool, DatabaseUtil, TranslationUtil
+from utils import ReptileUtil, HttpUtil, ThreadPool, DatabaseUtil, TranslationUtil, FileUtil
 
 s3 = DatabaseUtil.Sqlite3(os.path.join(Constants.DATA_PATH, "wallhaven"))
 
@@ -33,7 +34,11 @@ def download_images(url, page, directory):
     try:
         html = BeautifulSoup(HttpUtil.get(url + str(page)).text, features="lxml")
         figure = html.find_all("figure")
-        print(figure)
+        print(page, len(figure))
+
+        dir_size = FileUtil.count_dir_size(directory)
+        if dir_size >= 1073741824:
+            print(FileUtil.size_unit_format(dir_size))
 
         for label in figure:
             image_id = label.attrs["data-wallpaper-id"]
@@ -47,7 +52,7 @@ def download_images(url, page, directory):
                 tags = TranslationUtil.translate_google(tags).replace("，", ",")
 
             download_url = info_html.find("img", {"id": "wallpaper"}).attrs["src"]
-            if len(download_url) <= 0 and download_url == "":
+            if len(download_url) <= 0 or download_url == "":
                 raise ConnectionError("获取下载链接失败")
 
             s3.execute_commit(f"""
@@ -71,7 +76,7 @@ def download_images(url, page, directory):
         run_count += 1
 
         # 如果获取到的页数大于0，并且内存占用率小于80%时
-        if len(page_all) > 0 and psutil.virtual_memory().percent < 80 and run_count <= 8:
+        if len(page_all) > 0 and psutil.virtual_memory().percent < 80 and run_count <= 10:
             page_total = page_all[len(page_all) - 1].text
             # 如果不是最后一页，那么就继续下载下一页
             if page != page_total:

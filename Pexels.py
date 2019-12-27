@@ -16,7 +16,7 @@ import zhconv
 from bs4 import BeautifulSoup
 
 import Constants
-from utils import ReptileUtil, HttpUtil, ThreadPool, DatabaseUtil
+from utils import ReptileUtil, HttpUtil, ThreadPool, DatabaseUtil, FileUtil
 
 s3 = DatabaseUtil.Sqlite3(os.path.join(Constants.DATA_PATH, "pexels"))
 
@@ -28,7 +28,11 @@ def download_latest_images(page, directory):
         html = BeautifulSoup(HttpUtil.get("https://www.pexels.com/zh-cn/new-photos?page=" + str(page)).text,
                              features="lxml")
         articles = html.find_all("article")
-        print(articles)
+        print(page, len(articles))
+
+        dir_size = FileUtil.count_dir_size(directory)
+        if dir_size >= 1073741824:
+            print(FileUtil.size_unit_format(dir_size))
 
         for article in articles:
             # 图片id
@@ -65,7 +69,7 @@ def download_latest_images(page, directory):
         run_count += 1
 
         # 如果获取到的页数大于0，并且内存占用率小于80%时
-        if len(pages_html) > 0 and psutil.virtual_memory().percent < 80 and run_count <= 8:
+        if len(pages_html) > 0 and psutil.virtual_memory().percent < 80 and run_count <= 10:
             pages_html = BeautifulSoup(str(pages_html), features="lxml").find_all("a")
             page_total = pages_html[len(pages_html) - 2].text
             # 如果不是最后一页，那么就继续下载下一页

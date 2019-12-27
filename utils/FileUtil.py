@@ -262,3 +262,51 @@ class Config:
             return self.read()[section][key]
 
         return self.read()[section]
+
+
+def count_dir_size(dir_path):
+    """
+    获取目录大小
+    :param dir_path: 目录
+    :return:
+    """
+    size = 0
+    for root, dirs, files in os.walk(dir_path):
+        size += sum([os.path.getsize(os.path.join(root, name)) for name in files])
+    return size
+
+
+def size_unit_format(size, is_speed=False, precision=2):
+    """
+    文件大小自动转换
+    byte      ---- (B)
+    kilobyte  ---- (KB)
+    megabyte  ---- (MB)
+    gigabyte  ---- (GB)
+    terabyte  ---- (TB)
+    petabyte  ---- (PB)
+    exabyte   ---- (EB)
+    zettabyte ---- (ZB)
+    yottabyte ---- (YB)
+    :param size: 大小
+    :param is_speed: 是否为传输速率计算(bps/bit)
+    :param precision: 精确到小数点位数
+    :return:
+    """
+    if not (isinstance(size, float) or isinstance(size, int)):
+        raise TypeError('需要浮点数或整数！')
+    if size <= 0:
+        raise ValueError('数字必须大于零')
+    formats = ['KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
+    unit = 1000.0 if is_speed else 1024.0
+    for i in formats:
+        size /= unit
+        if size < unit:
+            return f'{round(size, precision)}{i}'
+    return f'{round(size, precision)}{i}'
+
+
+if __name__ == '__main__':
+    print(count_dir_size("images"))
+
+    print(size_unit_format(25635891))
