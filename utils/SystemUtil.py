@@ -9,7 +9,6 @@
 # @Software: PyCharm
 import ctypes
 import sys
-import winreg
 from subprocess import call
 from pip._internal.utils.misc import get_installed_distributions
 import pkg_resources
@@ -52,6 +51,8 @@ def get_windows_software():
     从注册表获取Windows系统安装的软件列表
     :return:
     """
+    import winreg
+
     # 需要遍历的两个注册表
     sub_keys = [
         r'SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall',
@@ -107,6 +108,8 @@ def update_fire_wall(key_name='PublicProfile'):
     :param key_name: PublicProfile StandardProfile
     :return:
     """
+    import winreg
+
     sub_dir = r'SYSTEM\CurrentControlSet\Services\SharedAccess\Parameters\FirewallPolicy'
     # 连接注册表根键
     regRoot = winreg.ConnectRegistry(None, winreg.HKEY_LOCAL_MACHINE)
