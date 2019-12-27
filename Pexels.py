@@ -22,24 +22,6 @@ save_dir = "images"
 
 s3 = DatabaseUtil.Sqlite3(os.path.join(Constants.DATA_PATH, "pexels"))
 
-# 查询表
-select_table = "select name from sqlite_master where type='table' and name='images'"
-
-# 获取自增的主键值：SELECT last_insert_rowid()
-crate_sql = """
-    CREATE TABLE images (
-    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-    image_id TEXT NOT NULL,
-    suffix TEXT NOT NULL,
-    url TEXT NOT NULL,
-    type TEXT,
-    page TEXT,
-    tags TEXT,
-    create_time TEXT DEFAULT (DATETIME('NOW', 'LOCALTIME')),
-    modify_time TEXT
-    )
-    """
-
 run_count = 0
 
 
@@ -78,11 +60,10 @@ def download_latest_images(page, directory):
 
             suffix = download_url[len(download_url) - 3:]
 
-            insert_sql = f"""
+            s3.execute_commit(f"""
             INSERT OR IGNORE INTO images(image_id,suffix,url,type,page,tags) 
             VALUES('{image_id}','{suffix}','{download_url}','latest','{page}','{tags}')
-            """
-            DatabaseUtil.insert(s3.connect(), insert_sql)
+            """)
 
         global run_count
         run_count += 1
@@ -107,11 +88,22 @@ def download_latest_images(page, directory):
 
 
 if __name__ == '__main__':
-    res = DatabaseUtil.select(s3.connect(), select_table)
-    if len(res) == 0:
-        row = DatabaseUtil.insert(s3.connect(), crate_sql)
+    if not s3.is_table_exist("images"):
+        # 获取自增的主键值：SELECT last_insert_rowid()
+        row = s3.execute_commit("""
+                        CREATE TABLE images (
+                            id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                            image_id TEXT NOT NULL,
+                            suffix TEXT NOT NULL,
+                            url TEXT NOT NULL,
+                            type TEXT,
+                            page TEXT,
+                            tags TEXT,
+                            create_time TEXT DEFAULT (DATETIME('NOW', 'LOCALTIME')),
+                            modify_time TEXT
+                        )""")
 
-    res = DatabaseUtil.select(s3.connect(), "SELECT page from images where type='latest' order by id desc limit 1")
+    res = s3.select("SELECT page from images where type='latest' order by id desc limit 1")
     if len(res) == 0:
         res = 1
     else:

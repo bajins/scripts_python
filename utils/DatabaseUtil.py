@@ -25,75 +25,17 @@ def select(connect, sql):
     try:
         # 创建一个游标对象 cursor
         cursor = connect.cursor()
-
         # 执行SQL
         cursor.execute(sql)
-
         # 使用 fetchone() 方法获取单条数据.
         # data = cursor.fetchone()
-
         # 获取所有数据
-        data = cursor.fetchall()
-
-        # 执行结果转化为dataframe
-        # data = pandas.DataFrame(list(data))
-
-        # 循环所有数据
-        # for d in data:
-        #     path=str(d[3])
-        #     print(path)
-        return data
+        return cursor.fetchall()
     finally:
         # 关闭游标
         cursor.close()
         # 关闭数据库连接
         connect.close()
-
-
-def args_join(**kwargs):
-    """
-    参数组合
-    :param kwargs:
-    :return:
-    """
-    sql = []
-    for k, v in kwargs:
-        sql.append(k + "=" + v)
-    return " and ".join(sql)
-
-
-# *args 表示把传进来的位置参数存储在tuple（元组）args里面
-# **kwargs 表示把参数作为字典的健-值对存储在dict（字典）args里面
-def select_args(connect, table, **kwargs):
-    """
-    游标对象执行SQL
-    :param connect:
-    :param table:
-    :param kwargs:
-    :return:
-    """
-
-    sql = "SELECT * FROM " + table
-    if len(kwargs) > 0:
-        sql = sql + " WHERE " + args_join(kwargs)
-
-    return select(connect, sql)
-
-
-def select_limit(connect, table, start, end, **kwargs):
-    """
-    分页查询Mysql数据库数据
-    :param connect:
-    :param table: 查询的表
-    :param start: 分页从第几条开始
-    :param end: 分页获取多少条数据
-    :return:
-    """
-    sql = "SELECT * FROM " + table
-    if len(kwargs) > 0:
-        sql = sql + " WHERE " + args_join(kwargs)
-    sql + " order by id limit " + str(start) + "," + str(end)
-    return select(connect, sql)
 
 
 def execute_commit(connect, sql):
@@ -110,8 +52,6 @@ def execute_commit(connect, sql):
         cursor.execute(sql)
         # 提交事物
         connect.commit()
-        # return cursor.fetchone()
-        # return cursor.fetchall()
         # 插入操作后获得自增ID
         # return cursor.lastrowid
         # 操作后获取成功行数
@@ -124,38 +64,18 @@ def execute_commit(connect, sql):
         connect.close()
 
 
-def insert(connect, sql):
+def is_table_exist(connect, table):
     """
-    插入数据
-    :param connect:
-    :param sql:
+    查询表是否存在
+    :param connect: 连接
+    :param table: 表名
     :return:
     """
-    return execute_commit(connect, sql)
-
-
-def update(connect, sql):
-    """
-    更新数据
-    :param connect:
-    :param sql:
-    :return:
-    """
-    return execute_commit(connect, sql)
-
-
-def delete(connect, table, **kwargs):
-    """
-    删除数据
-    :param table:
-    :param connect:
-    :return:
-    """
-    sql = "DELETE FROM " + table
-    if len(kwargs) > 0:
-        sql = sql + " WHERE " + args_join(kwargs)
-
-    return execute_commit(connect, sql)
+    sql = f"select name from sqlite_master where type='table' and name='{table}'"
+    res = execute_commit(connect, sql)
+    if len(res) == 0:
+        return False
+    return True
 
 
 class Mysql:
@@ -181,8 +101,38 @@ class Mysql:
         获取链接
         :return:
         """
-        return pymysql.connect(host=self.host, port=self.port, user=self.user, password=self.password, db=self.db,
-                               charset=self.charset)
+        return pymysql.connect(
+            host=self.host,
+            port=self.port,
+            user=self.user,
+            password=self.password,
+            db=self.db,
+            charset=self.charset
+        )
+
+    def execute_commit(self, sql):
+        """
+        插入数据、更新数据、删除数据
+        :param sql:
+        :return:
+        """
+        execute_commit(self.connect(), sql)
+
+    def select(self, sql):
+        """
+        更新数据
+        :param sql:
+        :return:
+        """
+        return select(self.connect, sql)
+
+    def is_table_exist(self, table):
+        """
+        查询表是否存在
+        :param table: 表名
+        :return:
+        """
+        return is_table_exist(self.connect(), table)
 
     def pandas_select(self, sql):
         """
@@ -190,7 +140,6 @@ class Mysql:
         :param sql:
         :return:
         """
-        # detectionModule("pandas")
         try:
             # 创建连接
             conn = self.connect()
@@ -198,17 +147,6 @@ class Mysql:
         finally:
             # 关闭数据库连接
             conn.close()
-
-    def pandas_select_limit(self, table, start, end):
-        """
-        用pandas库的read_sql分页查询Mysql数据库数据
-        :param table: 查询的表
-        :param start: 分页从第几条开始
-        :param end: 分页获取多少条数据
-        :return:
-        """
-        sql = "select * from " + table + " order by id limit " + str(start) + "," + str(end)
-        return self.pandas_select(sql)
 
 
 class Sqlite3:
@@ -240,3 +178,27 @@ class Sqlite3:
         # 插入中文字符
         # conn.text_factory = str
         return conn
+
+    def execute_commit(self, sql):
+        """
+        插入数据、更新数据、删除数据
+        :param sql:
+        :return:
+        """
+        execute_commit(self.connect(), sql)
+
+    def select(self, sql):
+        """
+        更新数据
+        :param sql:
+        :return:
+        """
+        return select(self.connect, sql)
+
+    def is_table_exist(self, table):
+        """
+        查询表是否存在
+        :param table: 表名
+        :return:
+        """
+        return is_table_exist(self.connect(), table)
