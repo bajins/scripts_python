@@ -72,7 +72,7 @@ def is_table_exist(connect, table):
     :return:
     """
     sql = f"select name from sqlite_master where type='table' and name='{table}'"
-    res = execute_commit(connect, sql)
+    res = select(connect, sql)
     if len(res) == 0:
         return False
     return True
