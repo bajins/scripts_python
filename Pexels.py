@@ -26,21 +26,6 @@ run_count = 0
 
 
 def download_latest_images(page, directory):
-    if not s3.is_table_exist("images"):
-        # 获取自增的主键值：SELECT last_insert_rowid()
-        s3.execute_commit("""
-            CREATE TABLE images (
-                id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-                image_id TEXT NOT NULL,
-                suffix TEXT NOT NULL,
-                url TEXT NOT NULL,
-                type TEXT,
-                page TEXT,
-                tags TEXT,
-                create_time TEXT DEFAULT (DATETIME('NOW', 'LOCALTIME')),
-                modify_time TEXT
-            )""")
-
     html = BeautifulSoup(HttpUtil.get("https://www.pexels.com/zh-cn/new-photos?page=" + str(page)).text,
                          features="lxml")
     articles = html.find_all("article")
@@ -99,7 +84,21 @@ def download_latest_images(page, directory):
 
 
 if __name__ == '__main__':
-    res = s3.select("SELECT page from images where type='latest' order by id desc limit 1")
+    if not s3.is_table_exist("images"):
+        # 获取自增的主键值：SELECT last_insert_rowid()
+        s3.execute_commit("""
+            CREATE TABLE images (
+                id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                image_id TEXT NOT NULL,
+                suffix TEXT NOT NULL,
+                url TEXT NOT NULL,
+                type TEXT,
+                page TEXT,
+                tags TEXT,
+                create_time TEXT DEFAULT (DATETIME('NOW', 'LOCALTIME')),
+                modify_time TEXT
+            )""")
+    res = s3.connect().execute("SELECT page from images where type='latest' order by id desc limit 1").fetchall()
     if len(res) == 0:
         res = 1
     else:

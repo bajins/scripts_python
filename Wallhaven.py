@@ -32,20 +32,6 @@ def download_images(url, page, directory):
     :param directory: 文件存放目录
     :return:
     """
-    if not s3.is_table_exist("images"):
-        # 获取自增的主键值：SELECT last_insert_rowid()
-        s3.execute_commit("""
-            CREATE TABLE images (
-                id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-                image_id TEXT NOT NULL,
-                suffix TEXT NOT NULL,
-                url TEXT NOT NULL,
-                type TEXT,
-                page TEXT,
-                tags TEXT,
-                create_time TEXT DEFAULT (DATETIME('NOW', 'LOCALTIME')),
-                modify_time TEXT
-            )""")
     try:
         html = BeautifulSoup(HttpUtil.get(url + str(page)).text, features="lxml")
         figure = html.find_all("figure")
@@ -147,13 +133,25 @@ def get_tag(page):
 
 
 if __name__ == '__main__':
+    if not s3.is_table_exist("images"):
+        # 获取自增的主键值：SELECT last_insert_rowid()
+        s3.execute_commit("""
+            CREATE TABLE images (
+                id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                image_id TEXT NOT NULL,
+                suffix TEXT NOT NULL,
+                url TEXT NOT NULL,
+                type TEXT,
+                page TEXT,
+                tags TEXT,
+                create_time TEXT DEFAULT (DATETIME('NOW', 'LOCALTIME')),
+                modify_time TEXT
+            )""")
     # get_tag(1)
     # download_tag_images("id%3A222", 3, "images")
-
-    res = s3.select("SELECT page from images where type='latest' order by id desc limit 1")
+    res = s3.connect().execute("SELECT page from images where type='latest' order by id desc limit 1").fetchall()
     if len(res) == 0:
         res = 1
     else:
         res = res[0][0]
     download_latest_images(int(res), save_dir)
-

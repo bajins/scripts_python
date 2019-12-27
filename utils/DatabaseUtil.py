@@ -187,14 +187,6 @@ class Sqlite3:
         """
         execute_commit(self.connect(), sql)
 
-    def select(self, sql):
-        """
-        更新数据
-        :param sql:
-        :return:
-        """
-        return select(self.connect, sql)
-
     def is_table_exist(self, table):
         """
         查询表是否存在
