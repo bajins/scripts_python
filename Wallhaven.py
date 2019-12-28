@@ -36,7 +36,7 @@ def download_images(url, page, directory):
         if dir_size >= 1073741824:
             print(FileUtil.size_unit_format(dir_size))
             # raise IOError("存储的图片超过1GB")
-            print(os.system("rclone --min-size 100k move /home/reptile-python/images/ onedrive:/images"))
+            print(os.system("rclone move /home/reptile-python/images/ onedrive:/images --min-size 100k"))
             print(FileUtil.size_unit_format(FileUtil.count_dir_size(directory)))
 
         html = BeautifulSoup(HttpUtil.get(url + str(page)).text, features="lxml")
@@ -146,7 +146,7 @@ def get_tag(page):
 
 def run_command():
     print(os.popen("rclone dedupe onedrive:/images --dedupe-mode newest").read())
-    print(os.popen("rclone --max-size 100k delete onedrive:/images").read())
+    print(os.popen("rclone delete onedrive:/images --max-size 100k").read())
     threading.Timer(86400, run_command).start()
 
 

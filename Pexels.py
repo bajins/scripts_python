@@ -29,7 +29,7 @@ def download_latest_images(page, directory):
         if dir_size >= 1073741824:
             print(FileUtil.size_unit_format(dir_size))
             # raise IOError("存储的图片超过1GB")
-            print(os.system("rclone --min-size 100k move /home/reptile-python/images/ gdrive:/images"))
+            print(os.system("rclone move /home/reptile-python/images/ gdrive:/images --min-size 100k"))
             print(FileUtil.size_unit_format(FileUtil.count_dir_size(directory)))
 
         html = BeautifulSoup(HttpUtil.get("https://www.pexels.com/zh-cn/new-photos?page=" + str(page)).text,
@@ -96,7 +96,7 @@ def download_latest_images(page, directory):
 
 def run_command():
     print(os.popen("rclone dedupe gdrive:/images --dedupe-mode newest").read())
-    print(os.popen("rclone --max-size 100k delete gdrive:/images").read())
+    print(os.popen("rclone delete gdrive:/images --max-size 100k").read())
     threading.Timer(86400, run_command).start()
 
 
