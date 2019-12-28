@@ -68,9 +68,9 @@ def download_latest_images(page, directory):
             # 判断文件是否存在
             if not os.path.exists(os.path.join(directory, image_name)):
                 # 每张图片启用单个线程下载
-                # done = ThreadPool.pool.submit(HttpUtil.download_file, download_url, directory, image_name)
+                done = ThreadPool.pool.submit(HttpUtil.download_file, download_url, directory, image_name)
                 # done.add_done_callback(ThreadPool.thread_call_back)
-                threading.Timer(30, HttpUtil.download_file, (download_url, directory, image_name))
+                # threading.Timer(30, HttpUtil.download_file, (download_url, directory, image_name))
 
         global run_count
         run_count += 1
