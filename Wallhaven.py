@@ -97,7 +97,7 @@ def download_images(url, page, directory):
     finally:
         print("当前活跃线程数:", threading.activeCount())
         time.sleep(400)
-        download_latest_images(url, page, directory)
+        download_images(url, page, directory)
 
 
 def download_tag_images(tag_id, page, directory):
