@@ -37,13 +37,14 @@ def download_images(url, page, directory):
             print(FileUtil.size_unit_format(dir_size))
             # raise IOError("存储的图片超过1GB")
             print(os.system("rclone --min-size 100k move /home/reptile-python/images/ onedrive:/images"))
-            print(FileUtil.size_unit_format(dir_size))
+            print(FileUtil.size_unit_format(FileUtil.count_dir_size(directory)))
 
         html = BeautifulSoup(HttpUtil.get(url + str(page)).text, features="lxml")
         figure = html.find_all("figure")
         # 获取所有包含指定属性的标签
         page_all = html.find_all(lambda tag: tag.has_attr('original-title'))
         page_total = int(page_all[len(page_all) - 1].text)
+
         print(page, len(figure), page_total)
         if page > page_total:
             page = 1

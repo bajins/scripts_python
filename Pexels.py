@@ -30,13 +30,14 @@ def download_latest_images(page, directory):
             print(FileUtil.size_unit_format(dir_size))
             # raise IOError("存储的图片超过1GB")
             print(os.system("rclone --min-size 100k move /home/reptile-python/images/ gdrive:/images"))
-            print(FileUtil.size_unit_format(dir_size))
+            print(FileUtil.size_unit_format(FileUtil.count_dir_size(directory)))
 
         html = BeautifulSoup(HttpUtil.get("https://www.pexels.com/zh-cn/new-photos?page=" + str(page)).text,
                              features="lxml")
         articles = html.find_all("article")
         pages_html = BeautifulSoup(str(html.find("div", {"class": "pagination"})), features="lxml").find_all("a")
         page_total = int(pages_html[len(pages_html) - 2].text)
+
         print(page, len(articles), page_total)
         if page > page_total:
             page = 1
