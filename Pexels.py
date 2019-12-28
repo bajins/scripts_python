@@ -96,6 +96,7 @@ def download_latest_images(page, directory):
 
 def run_command():
     print(os.popen("rclone dedupe gdrive:/images --dedupe-mode newest").read())
+    print(os.popen("rclone --max-size 100k delete gdrive:/images").read())
     threading.Timer(86400, run_command).start()
 
 

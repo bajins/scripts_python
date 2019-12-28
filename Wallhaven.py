@@ -145,6 +145,7 @@ def get_tag(page):
 
 
 def run_command():
+    print(os.popen("rclone dedupe onedrive:/images --dedupe-mode newest").read())
     print(os.popen("rclone --max-size 100k delete onedrive:/images").read())
     threading.Timer(86400, run_command).start()
 
