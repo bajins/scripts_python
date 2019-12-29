@@ -97,7 +97,8 @@ def download_big_file(url, mkdir, name=""):
         name = os.path.join(mkdir, name)
 
     start_time = time.time()
-    with requests.get(url, stream=True, headers={"User-Agent": USER_AGENT}, verify=False) as r:
+    req = requests.get(url, stream=True, headers={"User-Agent": USER_AGENT}, verify=False)
+    with req as r:
         content_length = int(r.headers['content-length'])
         line = 'content-length: %dB/%.2fKB/%.2fMB'
         print(name, line % (content_length, content_length / 1024, content_length / 1024 / 1024))
@@ -112,8 +113,11 @@ def download_big_file(url, mkdir, name=""):
                 print(name, line, end='\r')
                 if down_size >= content_length:
                     break
-        time_cost = time.time() - start_time
-        print(name, '共耗时：%.2f s，平均速度：%.2f KB/s' % (time_cost, down_size / 1024 / time_cost))
+        f.close()
+    r.close()
+    req.close()
+    time_cost = time.time() - start_time
+    print(name, '共耗时：%.2f s，平均速度：%.2f KB/s' % (time_cost, down_size / 1024 / time_cost))
 
 
 def download_file(url, mkdir, name=""):
@@ -143,9 +147,12 @@ def download_file(url, mkdir, name=""):
     # 判断文件是否存在
     # if not os.path.exists(name):
     if not os.path.isfile(name):
+        req = requests.get(url, headers={"User-Agent": USER_AGENT}, verify=False, timeout=600)
         # 文件不存在才保存
         with open(name, "wb") as f:
-            f.write(requests.get(url, headers={"User-Agent": USER_AGENT}, verify=False, timeout=600).content)
+            f.write(req.content)
+        f.close()
+        req.close()
     return name
 
 
