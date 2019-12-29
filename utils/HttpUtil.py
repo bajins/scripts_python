@@ -114,8 +114,11 @@ def download_big_file(url, mkdir, name=""):
                 if down_size >= content_length:
                     break
         f.close()
+        del f
     r.close()
     req.close()
+    del r
+    del req
     time_cost = time.time() - start_time
     print(name, '共耗时：%.2f s，平均速度：%.2f KB/s' % (time_cost, down_size / 1024 / time_cost))
 
@@ -153,6 +156,8 @@ def download_file(url, mkdir, name=""):
             f.write(req.content)
         f.close()
         req.close()
+        del f
+        del req
     return name
 
 
