@@ -7,6 +7,7 @@
 # @Project: tool-gui-python
 # @Package: 
 # @Software: PyCharm
+import gc
 import os
 import threading
 import time
@@ -31,6 +32,8 @@ def download_latest_images(page, directory):
             # raise IOError("存储的图片超过1GB")
             print(os.system("rclone move /home/reptile-python/images/ gdrive:/images --min-size 100k"))
             print(FileUtil.size_unit_format(FileUtil.count_dir_size(directory)))
+
+        wait()
 
         html = BeautifulSoup(HttpUtil.get("https://www.pexels.com/zh-cn/new-photos?page=" + str(page)).text,
                              features="lxml")
@@ -76,8 +79,8 @@ def download_latest_images(page, directory):
         global run_count
         run_count += 1
 
-        # 如果获取到的页数大于0不是最后一页，并且内存占用率小于80%时
-        if page_total > 0 and page <= page_total and psutil.virtual_memory().percent < 80 and run_count <= 10:
+        # 如果获取到的页数大于0不是最后一页
+        if page_total > 0 and page <= page_total and run_count <= 10:
             download_latest_images(page + 1, directory)
         else:
             if len(pages_html) > 0 and page <= page_total:
@@ -92,6 +95,17 @@ def download_latest_images(page, directory):
         print("当前活跃线程数:", threading.activeCount())
         time.sleep(400)
         download_latest_images(page, directory)
+
+
+def wait():
+    if psutil.virtual_memory().percent >= 80:
+        print('内存使用：', psutil.Process(os.getpid()).memory_info().rss)
+        print("当前内存占用率：", psutil.virtual_memory().percent)
+        print("垃圾回收机制是否打开:", gc.isenabled())
+        # 释放内存
+        gc.collect()
+    if psutil.virtual_memory().percent >= 80:
+        wait()
 
 
 def run_command():

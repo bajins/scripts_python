@@ -7,6 +7,7 @@
 # @Project: tool-gui-python
 # @Package: 
 # @Software: PyCharm
+import gc
 import os
 import platform
 import threading
@@ -38,6 +39,8 @@ def download_images(url, page, directory):
             # raise IOError("存储的图片超过1GB")
             print(os.system("rclone move /home/reptile-python/images/ onedrive:/images --min-size 100k"))
             print(FileUtil.size_unit_format(FileUtil.count_dir_size(directory)))
+
+        wait()
 
         html = BeautifulSoup(HttpUtil.get(url + str(page)).text, features="lxml")
         figure = html.find_all("figure")
@@ -142,6 +145,21 @@ def get_tag(page):
     # 如果不是最后一页，那么就继续下载下一页
     if page != page_total:
         get_tag(page + 1)
+
+
+def wait():
+    """
+    垃圾回收
+    :return:
+    """
+    if psutil.virtual_memory().percent >= 80:
+        print('内存使用：', psutil.Process(os.getpid()).memory_info().rss)
+        print("当前内存占用率：", psutil.virtual_memory().percent)
+        print("垃圾回收机制是否打开:", gc.isenabled())
+        # 释放内存
+        gc.collect()
+    if psutil.virtual_memory().percent >= 80:
+        wait()
 
 
 def run_command():
