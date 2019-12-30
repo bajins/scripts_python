@@ -9,7 +9,7 @@
 # @Software: PyCharm
 import gc
 import os
-import platform
+import re
 import threading
 import time
 
@@ -42,7 +42,7 @@ def download_images(url, page, directory):
 
         wait()
 
-        html = BeautifulSoup(HttpUtil.get(url + str(2472)).text, features="lxml")
+        html = BeautifulSoup(HttpUtil.get(url + str(page)).text, features="lxml")
         figure = html.find_all("figure")
         # 获取所有包含指定属性的标签
         page_all = html.find_all(lambda tag: tag.has_attr('original-title'))
@@ -63,6 +63,7 @@ def download_images(url, page, directory):
             tags = ",".join([tag_html.text for tag_html in tags_html]).replace("'", "")
             if len(tags) > 0 and tags != "":
                 tags = TranslationUtil.translate_google(tags).replace("，", ",")
+                tags = re.sub(r"[^a-z,\u4e00-\u9fa5]+|^,|,$", "", tags).replace(",,", ",")
 
             download_url = info_html.find("img", {"id": "wallpaper"}).attrs["src"]
             if len(download_url) <= 0 or download_url == "":
@@ -96,6 +97,8 @@ def download_images(url, page, directory):
                 page = 1
             run_count = 0
 
+    except Exception as e:
+        print(e)
     finally:
         print("当前活跃线程数:", threading.activeCount())
         time.sleep(400)

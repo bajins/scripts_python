@@ -9,6 +9,7 @@
 # @Software: PyCharm
 import gc
 import os
+import re
 import threading
 import time
 
@@ -57,11 +58,11 @@ def download_latest_images(page, directory):
 
             info_html = BeautifulSoup(HttpUtil.get("https://www.pexels.com/zh-cn/photo/" + image_id).text,
                                       features="lxml")
-            tags = info_html.find("meta", {"name": "keywords"}).attrs["content"].replace(" ", "").replace("'", "")
+            tags = info_html.find("meta", {"name": "keywords"}).attrs["content"]
             if len(tags) > 0 and tags != "":
                 # 简繁转换
                 tags = zhconv.convert(tags[:len(tags) - 7], 'zh-cn')
-
+                tags = re.sub(r"[^a-z,\u4e00-\u9fa5]+|^,|,$", "", tags).replace(",,", ",")
             s3.execute_commit(f"""
             INSERT OR IGNORE INTO images(image_id,suffix,url,type,page,tags) 
             VALUES('{image_id}','{download_url[download_url.rfind(".") + 1:]}','{download_url}','latest','{page}','{tags}')
@@ -89,6 +90,8 @@ def download_latest_images(page, directory):
                 page = 1
             run_count = 0
 
+    except Exception as e:
+        print(e)
     finally:
         print("当前活跃线程数:", threading.activeCount())
         time.sleep(400)

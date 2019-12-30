@@ -31,6 +31,9 @@ def select(connect, sql):
         # data = cursor.fetchone()
         # 获取所有数据
         return cursor.fetchall()
+    except sqlite3.OperationalError as e:
+        print(sql)
+        raise e
     finally:
         # 关闭游标
         cursor.close()
@@ -57,6 +60,9 @@ def execute_commit(connect, sql):
         # 操作后获取成功行数
         # return cursor.arraysize
         return cursor.rowcount
+    except sqlite3.OperationalError as e:
+        print(sql)
+        raise e
     finally:
         # 关闭游标
         cursor.close()
