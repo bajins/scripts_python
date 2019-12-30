@@ -12,7 +12,6 @@ import os
 import re
 import threading
 import time
-import tracemalloc
 
 import psutil
 import zhconv
@@ -101,14 +100,6 @@ def download_latest_images(page, directory):
 
 
 def wait():
-    # time1 = tracemalloc.take_snapshow()
-    # import waste_memory
-    # x = waste_memory.run()
-    # time2 = tracemalloc.take_snapshow()
-    # stats = time2.compare_to(time1, 'lineno')
-    snapshot = tracemalloc.take_snapshot()  # 快照，当前内存分配
-    top_stats = snapshot.statistics('lineno')  # 快照对象的统计
-    [print(stat) for stat in top_stats]
     if psutil.virtual_memory().percent >= 80:
         print('内存使用：', psutil.Process(os.getpid()).memory_info().rss)
         print("当前内存占用率：", psutil.virtual_memory().percent)
@@ -126,7 +117,6 @@ def run_command():
 
 
 if __name__ == '__main__':
-    tracemalloc.start()  # 开始跟踪内存分配
     if not s3.is_table_exist("images"):
         # 获取自增的主键值：SELECT last_insert_rowid()
         s3.execute_commit("""

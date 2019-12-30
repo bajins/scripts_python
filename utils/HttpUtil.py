@@ -73,15 +73,62 @@ def get_json(url, data):
     return json.loads(get(url=url, data=data).text)
 
 
-def download_big_file(url, mkdir, name=""):
+def download_big_file_urlib(url, mkdir, name=""):
     """
-    用requests下载大文件，边下边写
+    使用urlib下载大文件和小文件都差不多，
+    只不过在read（）函数中指定了每次读入文件的大小
+    不能使用迭代器，只能使用for循环，还得判断最后文件是否读完
     :param url:
     :param mkdir:
     :param name:
     :return:
     """
+    from urllib.request import Request, urlopen
+    from urllib.error import HTTPError, URLError
 
+    # 判断文件名称是否传入
+    if name is None or name == "":
+        ur = str(url).split("/")
+        # 如果没传，就取URL中最后的文件名
+        name = ur[len(ur) - 1]
+
+    # 判断是否传入文件夹
+    if mkdir is not None and mkdir != "":
+        # 判断目录是否存在
+        if not os.path.exists(mkdir):
+            # 目录不存在则创建
+            os.mkdir(mkdir)
+        name = os.path.join(mkdir, name)
+
+    req = Request(url)
+    # 增加header头信息
+    req.add_header('User-Agent', USER_AGENT)
+
+    response = urlopen(req)
+    while True:
+        # 在read（）中指定读入块的大小
+        tmp = response.read(512)
+        if not tmp:
+            break
+    response.close()
+    with open(name, 'wb') as f:
+        f.write(tmp)
+
+
+def download_big_file(url, mkdir, name=""):
+    """
+    用requests下载大文件，边下边写
+    当把get函数的stream参数设置成True时，它不会立即开始下载，
+    当你使用iter_content或iter_lines遍历内容或访问内容属性时才开始下载。
+    需要注意一点：文件没有下载之前，它也需要保持连接。
+
+    iter_content：一块一块的遍历要下载的内容
+    iter_lines：一行一行的遍历要下载的内容
+    :param url:
+    :param mkdir:
+    :param name:
+    :return:
+    """
     # 判断文件名称是否传入
     if name is None or name == "":
         ur = str(url).split("/")
@@ -100,25 +147,22 @@ def download_big_file(url, mkdir, name=""):
     req = requests.get(url, stream=True, headers={"User-Agent": USER_AGENT}, verify=False)
     with req as r:
         content_length = int(r.headers['content-length'])
-        line = 'content-length: %dB/%.2fKB/%.2fMB'
-        print(name, line % (content_length, content_length / 1024, content_length / 1024 / 1024))
+        print(name, 'content-length: %dB/%.2fKB/%.2fMB' % (
+            content_length, content_length / 1024, content_length / 1024 / 1024))
         down_size = 0
         with open(name, 'wb') as f:
-            for chunk in r.iter_content(8192):
+            for chunk in r.iter_content(512):
                 if chunk:
                     f.write(chunk)
                 down_size += len(chunk)
-                line = '%d KB/s - %.2f MB，共 %.2f MB' % (down_size / 1024 / (time.time() - start_time),
-                                                        down_size / 1024 / 1024, content_length / 1024 / 1024)
-                print(name, line, end='\r')
+                print(name, '%d KB/s - %.2f MB，共 %.2f MB' % (
+                    down_size / 1024 / (time.time() - start_time), down_size / 1024 / 1024,
+                    content_length / 1024 / 1024), end='\r')
                 if down_size >= content_length:
                     break
         f.close()
-        del f
     r.close()
     req.close()
-    del r
-    del req
     time_cost = time.time() - start_time
     print(name, '共耗时：%.2f s，平均速度：%.2f KB/s' % (time_cost, down_size / 1024 / time_cost))
 
@@ -156,8 +200,6 @@ def download_file(url, mkdir, name=""):
             f.write(req.content)
         f.close()
         req.close()
-        del f
-        del req
     return name
 
 
