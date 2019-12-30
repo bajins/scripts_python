@@ -11,14 +11,11 @@ import asyncio
 import io
 import json
 import os
-import shutil
 import socket
-import threading
 import time
 import urllib
-from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 
-import aiofiles as aiofiles
+import aiofiles
 import aiohttp
 import requests
 import urllib3
