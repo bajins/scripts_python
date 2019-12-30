@@ -124,7 +124,7 @@ class Mysql:
         :param sql:
         :return:
         """
-        return select(self.connect, sql)
+        return select(self.connect(), sql)
 
     def is_table_exist(self, table):
         """
@@ -158,12 +158,9 @@ class Sqlite3:
         """
         self.db = database
         self.charset = charset
+        self.get_path()
 
-    def connect(self):
-        """
-        获取连接，如果数据库不存在，那么它就会被创建，最后将返回一个数据库对象。
-        :return:
-        """
+    def get_path(self):
         if not self.db.endswith('.db'):
             self.db = self.db + '.db'
 
@@ -174,6 +171,25 @@ class Sqlite3:
             # 目录不存在则创建
             os.mkdir(p)
 
+    # def __enter__(self):
+    #     """
+    #     https://gist.githubusercontent.com/miku/6522074/raw
+    #     获取连接，返回游标
+    #     :return:
+    #     """
+    #     self.conn = sqlite3.connect(self.db)
+    #     self.cursor = self.conn.cursor()
+    #     return self.cursor
+    #
+    # def __exit__(self, exc_class, exc, traceback):
+    #     self.conn.commit()
+    #     self.conn.close()
+
+    def connect(self):
+        """
+        获取连接，如果数据库不存在，那么它就会被创建，最后将返回一个数据库对象。
+        :return:
+        """
         conn = sqlite3.connect(self.db)
         # 插入中文字符
         # conn.text_factory = str
@@ -185,7 +201,15 @@ class Sqlite3:
         :param sql:
         :return:
         """
-        execute_commit(self.connect(), sql)
+        return execute_commit(self.connect(), sql)
+
+    def select(self, sql):
+        """
+        更新数据
+        :param sql:
+        :return:
+        """
+        return select(self.connect(), sql)
 
     def is_table_exist(self, table):
         """

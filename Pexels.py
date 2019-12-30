@@ -129,7 +129,7 @@ if __name__ == '__main__':
                 create_time TEXT DEFAULT (DATETIME('NOW', 'LOCALTIME')),
                 modify_time TEXT
             )""")
-    res = s3.connect().execute("SELECT page from images where type='latest' order by id desc limit 1").fetchall()
+    res = s3.select("SELECT page from images where type='latest' order by id desc limit 1")
     if len(res) == 0:
         res = 1
     else:
