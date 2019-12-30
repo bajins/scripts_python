@@ -100,6 +100,7 @@ def download_latest_images(page, directory):
 
 
 def wait():
+    ThreadPool.pool.shutdown()
     if psutil.virtual_memory().percent >= 80:
         print('内存使用：', psutil.Process(os.getpid()).memory_info().rss)
         print("当前内存占用率：", psutil.virtual_memory().percent)
