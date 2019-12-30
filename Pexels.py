@@ -93,6 +93,7 @@ def download_latest_images(page, directory):
     except Exception as e:
         print(e)
     finally:
+        ThreadPool.pool.shutdown()
         print("当前活跃线程数:", threading.activeCount())
         if psutil.virtual_memory().percent < 80:
             time.sleep(400)
@@ -100,7 +101,6 @@ def download_latest_images(page, directory):
 
 
 def wait():
-    ThreadPool.pool.shutdown()
     if psutil.virtual_memory().percent >= 80:
         print('内存使用：', psutil.Process(os.getpid()).memory_info().rss)
         print("当前内存占用率：", psutil.virtual_memory().percent)
