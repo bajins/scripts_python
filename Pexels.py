@@ -89,8 +89,6 @@ def download_latest_images(page, directory):
                 page = 1
             run_count = 0
 
-    except Exception as e:
-        print(e)
     finally:
         print("当前活跃线程数:", threading.activeCount())
         time.sleep(400)
