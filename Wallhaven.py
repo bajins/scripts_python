@@ -42,7 +42,7 @@ def download_images(url, page, directory):
 
         wait()
 
-        html = BeautifulSoup(HttpUtil.get(url + str(page)).text, features="lxml")
+        html = BeautifulSoup(HttpUtil.get(url + str(2472)).text, features="lxml")
         figure = html.find_all("figure")
         # 获取所有包含指定属性的标签
         page_all = html.find_all(lambda tag: tag.has_attr('original-title'))
@@ -87,7 +87,7 @@ def download_images(url, page, directory):
         run_count += 1
 
         # 如果获取到的页数大于0不是最后一页，并且内存占用率小于80%时
-        if len(page_all) > 0 and page <= page_total and psutil.virtual_memory().percent < 80 and run_count <= 10:
+        if len(page_all) > 0 and page <= page_total and run_count <= 10:
             download_images(url, page + 1, directory)
         else:
             if len(page_all) > 0:
