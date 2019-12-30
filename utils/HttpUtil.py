@@ -7,8 +7,8 @@
 # @Project: windows-wallpaper-python
 # @Package:
 # @Software: PyCharm
-
-
+import asyncio
+import io
 import json
 import os
 import shutil
@@ -18,8 +18,12 @@ import time
 import urllib
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 
+import aiofiles as aiofiles
+import aiohttp
 import requests
 import urllib3
+
+from utils import ThreadPool
 
 USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) " \
              "Chrome/77.0.3865.75 Safari/537.36 "
@@ -107,7 +111,7 @@ def download_big_file_urlib(url, mkdir, name=""):
     response = urlopen(req)
     while True:
         # 在read（）中指定读入块的大小
-        tmp = response.read(512)
+        tmp = response.read(8196)
         if not tmp:
             break
     response.close()
@@ -151,7 +155,7 @@ def download_big_file(url, mkdir, name=""):
             content_length, content_length / 1024, content_length / 1024 / 1024))
         down_size = 0
         with open(name, 'wb') as f:
-            for chunk in r.iter_content(512):
+            for chunk in r.iter_content(8196):
                 if chunk:
                     f.write(chunk)
                 down_size += len(chunk)
@@ -160,9 +164,6 @@ def download_big_file(url, mkdir, name=""):
                     content_length / 1024 / 1024), end='\r')
                 if down_size >= content_length:
                     break
-        f.close()
-    r.close()
-    req.close()
     time_cost = time.time() - start_time
     print(name, '共耗时：%.2f s，平均速度：%.2f KB/s' % (time_cost, down_size / 1024 / time_cost))
 
@@ -194,82 +195,80 @@ def download_file(url, mkdir, name=""):
     # 判断文件是否存在
     # if not os.path.exists(name):
     if not os.path.isfile(name):
-        req = requests.get(url, headers={"User-Agent": USER_AGENT}, verify=False, timeout=600)
-        # 文件不存在才保存
-        with open(name, "wb") as f:
-            f.write(req.content)
-        f.close()
-        req.close()
+        reqs = requests.get(url, headers={"User-Agent": USER_AGENT}, verify=False, timeout=600)
+        with reqs as req:
+            with open(name, "wb") as f:
+                f.write(req.content)
     return name
 
 
-def thread_download_file(url, mkdir, name=""):
+def save_file(fd: io.BufferedWriter, chunk):
+    fd.write(chunk)
+
+
+async def download_one_fetch_async(url: str, mkdir: str, name: str):
     """
-    启用单独线程下载文件
-    :param url: 下载链接
-    :param mkdir: 文件存放目录
-    :param name: 文件名
+    异步分块下载一个文件
+    :param url:
+    :param mkdir:
+    :param name:
     :return:
     """
-    if url is None or url == "":
-        raise ValueError("url参数不正确")
-    if mkdir is None or mkdir == "":
-        raise ValueError("mkdir文件目录参数不正确")
+    # 判断文件名称是否传入
+    if name is None or name == "":
+        ur = str(url).split("/")
+        # 如果没传，就取URL中最后的文件名
+        name = ur[len(ur) - 1]
 
-    # 启用单个线程下载
-    threading.Thread(target=download_file, args=(url, mkdir, name)).start()
+    # 判断是否传入文件夹
+    if mkdir is not None and mkdir != "":
+        # 判断目录是否存在
+        if not os.path.exists(mkdir):
+            # 目录不存在则创建
+            # os.mkdir(mkdir)
+            os.makedirs(mkdir)
+        name = os.path.join(mkdir, name)
+
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url) as resp:
+            with open(name, 'wb') as f:
+                while 1:
+                    chunk = await resp.content.read(8196)
+                    if not chunk:
+                        break
+                    # f.write(chunk)
+                    lp = asyncio.get_event_loop()
+                    # None事件循环中包含一个默认的线程池(ThreadPoolExecutor)
+                    lp.run_in_executor(None, save_file, f, chunk)
 
 
-def thread_call_back(future):
+async def download_one_async(url, mkdir, name):
     """
-    线程回调执行
-    :param future:
+    异步下载一个文件
+    :param url:
+    :param mkdir:
+    :param name:
     :return:
     """
-    print(future)
-    print(future.result())
+    # 判断文件名称是否传入
+    if name is None or name == "":
+        ur = str(url).split("/")
+        # 如果没传，就取URL中最后的文件名
+        name = ur[len(ur) - 1]
 
+    # 判断是否传入文件夹
+    if mkdir is not None and mkdir != "":
+        # 判断目录是否存在
+        if not os.path.exists(mkdir):
+            # 目录不存在则创建
+            # os.mkdir(mkdir)
+            os.makedirs(mkdir)
+        name = os.path.join(mkdir, name)
 
-pool = ThreadPoolExecutor(max_workers=20)
-
-
-def thread_pool_download_file(urls=[], mkdir=None):
-    """
-    启用线程池下载
-    :param urls: 下载链接数组[{"url":"","filename":""}]
-    :param mkdir: 文件存放目录
-    :return:
-    """
-    if len(urls) == 0 or urls[0]["url"] == "":
-        raise ValueError("url链接数组参数不正确")
-
-    if mkdir is None or mkdir == "":
-        raise ValueError("mkdir文件目录参数不正确")
-
-    # thread_res = []
-
-    for url in urls:
-        # thread_res.append(pool.submit(download_file, url["url"], mkdir, urls["filename"]))
-        pool.submit(download_file, url["url"], mkdir, urls["filename"]).add_done_callback(thread_call_back)
-
-
-def download_file_move(url, mkdir, name, move_dir):
-    """
-    下载文件并移动到指定目录
-    :param url: 文件链接
-    :param mkdir: 文件保存目录
-    :param name: 文件名
-    :param move_dir: 移动到此目录
-    :return:
-    """
-    filename = download_file(url, mkdir, name)
-
-    if not os.path.exists(move_dir):
-        # 目录不存在则创建
-        os.mkdir(move_dir)
-
-    if os.path.isfile(filename) and os.stat(filename).st_size > 102400:
-        shutil.move(filename, os.path.join(move_dir, os.path.split(filename)[1]))
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url) as response:
+            async with aiofiles.open(name, 'wb') as f:
+                await f.write(await response.read())
 
 
 def download_file_list(urls, mkdir, name):

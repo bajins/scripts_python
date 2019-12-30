@@ -7,6 +7,7 @@
 # @Project: tool-gui-python
 # @Package: 
 # @Software: PyCharm
+import asyncio
 import gc
 import os
 import re
@@ -73,9 +74,10 @@ def download_latest_images(page, directory):
             # 判断文件是否存在
             if not os.path.exists(os.path.join(directory, image_name)):
                 # 每张图片启用单个线程下载
-                done = ThreadPool.pool.submit(HttpUtil.download_file, download_url, directory, image_name)
+                # done = ThreadPool.pool.submit(HttpUtil.download_file, download_url, directory, image_name)
                 # done.add_done_callback(ThreadPool.thread_call_back)
                 # threading.Timer(30, HttpUtil.download_file, (download_url, directory, image_name))
+                asyncio.run(HttpUtil.download_one_async(download_url, directory, image_name))
 
         global run_count
         run_count += 1
@@ -93,7 +95,6 @@ def download_latest_images(page, directory):
     except Exception as e:
         print(e)
     finally:
-        ThreadPool.pool.shutdown()
         print("当前活跃线程数:", threading.activeCount())
         if psutil.virtual_memory().percent < 80:
             time.sleep(400)
