@@ -7,6 +7,7 @@
 # @Project: tool-gui-python
 # @Package: 
 # @Software: PyCharm
+import asyncio
 import gc
 import os
 import re
@@ -35,10 +36,7 @@ def download_images(url, page, directory):
     try:
         dir_size = FileUtil.count_dir_size(directory)
         if dir_size >= 1073741824:
-            print(FileUtil.size_unit_format(dir_size))
-            # raise IOError("存储的图片超过1GB")
-            print(os.system("rclone move /home/reptile-python/images/ onedrive:/images --min-size 100k"))
-            print(FileUtil.size_unit_format(FileUtil.count_dir_size(directory)))
+            asyncio.run(move(directory, dir_size))
 
         wait()
 
@@ -80,9 +78,9 @@ def download_images(url, page, directory):
             # if not os.path.exists(name):
             if not os.path.isfile(os.path.join(directory, image_name)):
                 # 每张图片启用单个线程下载
-                done = ThreadPool.pool.submit(HttpUtil.download_file, download_url, directory, image_name)
+                # done = ThreadPool.pool.submit(HttpUtil.download_file, download_url, directory, image_name)
                 # done.add_done_callback(ThreadPool.thread_call_back)
-                # threading.Timer(30, HttpUtil.download_file, (download_url, directory, image_name))
+                asyncio.run(HttpUtil.download_one_async(download_url, directory, image_name))
 
         global run_count
         run_count += 1
@@ -146,6 +144,13 @@ def get_tag(page):
     # 如果不是最后一页，那么就继续下载下一页
     if page != page_total:
         get_tag(page + 1)
+
+
+async def move(directory, dir_size):
+    print(FileUtil.size_unit_format(dir_size))
+    # raise IOError("存储的图片超过1GB")
+    print(os.system("rclone move /home/reptile-python/images/ gdrive:/images --min-size 100k"))
+    print(FileUtil.size_unit_format(FileUtil.count_dir_size(directory)))
 
 
 def wait():

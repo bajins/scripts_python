@@ -30,11 +30,7 @@ def download_latest_images(page, directory):
     try:
         dir_size = FileUtil.count_dir_size(directory)
         if dir_size >= 1073741824:
-            print(FileUtil.size_unit_format(dir_size))
-            # raise IOError("存储的图片超过1GB")
-            print(os.system("rclone move /home/reptile-python/images/ gdrive:/images --min-size 100k"))
-            print(FileUtil.size_unit_format(FileUtil.count_dir_size(directory)))
-
+            asyncio.run(move(directory, dir_size))
         wait()
 
         html = BeautifulSoup(HttpUtil.get("https://www.pexels.com/zh-cn/new-photos?page=" + str(page)).text,
@@ -76,7 +72,6 @@ def download_latest_images(page, directory):
                 # 每张图片启用单个线程下载
                 # done = ThreadPool.pool.submit(HttpUtil.download_file, download_url, directory, image_name)
                 # done.add_done_callback(ThreadPool.thread_call_back)
-                # threading.Timer(30, HttpUtil.download_file, (download_url, directory, image_name))
                 asyncio.run(HttpUtil.download_one_async(download_url, directory, image_name))
 
         global run_count
@@ -96,9 +91,14 @@ def download_latest_images(page, directory):
         print(e)
     finally:
         print("当前活跃线程数:", threading.activeCount())
-        if psutil.virtual_memory().percent < 80:
-            time.sleep(400)
-            download_latest_images(page, directory)
+        download_latest_images(page, directory)
+
+
+async def move(directory, dir_size):
+    print(FileUtil.size_unit_format(dir_size))
+    # raise IOError("存储的图片超过1GB")
+    print(os.system("rclone move /home/reptile-python/images/ gdrive:/images --min-size 100k"))
+    print(FileUtil.size_unit_format(FileUtil.count_dir_size(directory)))
 
 
 def wait():
