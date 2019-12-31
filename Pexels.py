@@ -106,14 +106,14 @@ def wait():
 
 
 def run_command(directory):
-    threading.Timer(86400, run_command).start()
-    print(os.popen("rclone dedupe gdrive:/images --dedupe-mode newest").read())
-    print(os.popen("rclone delete gdrive:/images --max-size 100k").read())
+    threading.Timer(43200, run_command).start()
     dir_size = FileUtil.count_dir_size(directory)
     if dir_size >= 107374182400:
         print(FileUtil.size_unit_format(dir_size))
         print(os.system("rclone move /home/reptile-python/images/ gdrive:/images --min-size 100k"))
         print(FileUtil.size_unit_format(FileUtil.count_dir_size(directory)))
+    print(os.popen("rclone dedupe gdrive:/images --dedupe-mode newest").read())
+    print(os.popen("rclone delete gdrive:/images --max-size 100k").read())
 
 
 if __name__ == '__main__':

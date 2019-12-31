@@ -159,15 +159,14 @@ def wait():
 
 
 def run_command(directory):
-    threading.Timer(86400, run_command).start()
-    print(os.popen("rclone dedupe onedrive:/images --dedupe-mode newest").read())
-    print(os.popen("rclone delete onedrive:/images --max-size 100k").read())
+    threading.Timer(3600, run_command).start()
     dir_size = FileUtil.count_dir_size(directory)
     if dir_size >= 10737418240:
         print(FileUtil.size_unit_format(dir_size))
-        # raise IOError("存储的图片超过1GB")
         print(os.system("rclone move /home/reptile-python/images/ onedrive:/images --min-size 100k"))
         print(FileUtil.size_unit_format(FileUtil.count_dir_size(directory)))
+    print(os.popen("rclone dedupe onedrive:/images --dedupe-mode newest").read())
+    print(os.popen("rclone delete onedrive:/images --max-size 100k").read())
 
 
 if __name__ == '__main__':
