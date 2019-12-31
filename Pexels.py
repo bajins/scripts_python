@@ -94,6 +94,7 @@ def download_latest_images(page, directory):
         print(e)
     finally:
         print("当前活跃线程数:", threading.activeCount())
+        time.sleep(400)
         download_latest_images(page, directory)
 
 
