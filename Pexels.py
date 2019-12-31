@@ -29,9 +29,8 @@ run_count = 0
 def download_latest_images(page, directory):
     try:
         dir_size = FileUtil.count_dir_size(directory)
-        if dir_size >= 1073741824:
+        if dir_size >= 107374182400:
             print(FileUtil.size_unit_format(dir_size))
-            # raise IOError("存储的图片超过1GB")
             print(os.system("rclone move /home/reptile-python/images/ gdrive:/images --min-size 100k"))
             print(FileUtil.size_unit_format(FileUtil.count_dir_size(directory)))
         wait()
