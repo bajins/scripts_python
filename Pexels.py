@@ -104,6 +104,8 @@ def wait():
         print("垃圾回收机制是否打开:", gc.isenabled())
         # 释放内存
         gc.collect()
+        print('内存使用：', psutil.Process(os.getpid()).memory_info().rss)
+        print("当前内存占用率：", psutil.virtual_memory().percent)
     if psutil.virtual_memory().percent >= 80:
         wait()
 
