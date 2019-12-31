@@ -106,7 +106,7 @@ def wait():
 
 
 def run_command(directory):
-    threading.Timer(43200, run_command).start()
+    threading.Timer(21600, run_command).start()
     dir_size = FileUtil.count_dir_size(directory)
     if dir_size >= 107374182400:
         print(FileUtil.size_unit_format(dir_size))
