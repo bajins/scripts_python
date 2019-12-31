@@ -34,13 +34,6 @@ def download_images(url, page, directory):
     :return:
     """
     try:
-        dir_size = FileUtil.count_dir_size(directory)
-        if dir_size >= 1073741824:
-            print(FileUtil.size_unit_format(dir_size))
-            # raise IOError("存储的图片超过1GB")
-            print(os.system("rclone move /home/reptile-python/images/ onedrive:/images --min-size 100k"))
-            print(FileUtil.size_unit_format(FileUtil.count_dir_size(directory)))
-
         wait()
 
         html = BeautifulSoup(HttpUtil.get(url + str(page)).text, features="lxml")
@@ -165,10 +158,16 @@ def wait():
         wait()
 
 
-def run_command():
+def run_command(directory):
+    threading.Timer(86400, run_command).start()
     print(os.popen("rclone dedupe onedrive:/images --dedupe-mode newest").read())
     print(os.popen("rclone delete onedrive:/images --max-size 100k").read())
-    threading.Timer(86400, run_command).start()
+    dir_size = FileUtil.count_dir_size(directory)
+    if dir_size >= 10737418240:
+        print(FileUtil.size_unit_format(dir_size))
+        # raise IOError("存储的图片超过1GB")
+        print(os.system("rclone move /home/reptile-python/images/ onedrive:/images --min-size 100k"))
+        print(FileUtil.size_unit_format(FileUtil.count_dir_size(directory)))
 
 
 if __name__ == '__main__':
@@ -194,4 +193,4 @@ if __name__ == '__main__':
     else:
         res = res[0][0]
     download_latest_images(int(res), "images")
-    run_command()
+    run_command("images")

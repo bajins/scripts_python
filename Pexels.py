@@ -28,11 +28,6 @@ run_count = 0
 
 def download_latest_images(page, directory):
     try:
-        dir_size = FileUtil.count_dir_size(directory)
-        if dir_size >= 107374182400:
-            print(FileUtil.size_unit_format(dir_size))
-            print(os.system("rclone move /home/reptile-python/images/ gdrive:/images --min-size 100k"))
-            print(FileUtil.size_unit_format(FileUtil.count_dir_size(directory)))
         wait()
 
         html = BeautifulSoup(HttpUtil.get("https://www.pexels.com/zh-cn/new-photos?page=" + str(page)).text,
@@ -110,10 +105,15 @@ def wait():
         wait()
 
 
-def run_command():
+def run_command(directory):
+    threading.Timer(86400, run_command).start()
     print(os.popen("rclone dedupe gdrive:/images --dedupe-mode newest").read())
     print(os.popen("rclone delete gdrive:/images --max-size 100k").read())
-    threading.Timer(86400, run_command).start()
+    dir_size = FileUtil.count_dir_size(directory)
+    if dir_size >= 107374182400:
+        print(FileUtil.size_unit_format(dir_size))
+        print(os.system("rclone move /home/reptile-python/images/ gdrive:/images --min-size 100k"))
+        print(FileUtil.size_unit_format(FileUtil.count_dir_size(directory)))
 
 
 if __name__ == '__main__':
@@ -138,4 +138,4 @@ if __name__ == '__main__':
         res = res[0][0]
 
     download_latest_images(int(res), "images")
-    run_command()
+    run_command("images")
