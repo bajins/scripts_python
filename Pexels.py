@@ -137,5 +137,6 @@ if __name__ == '__main__':
     else:
         res = res[0][0]
 
-    download_latest_images(int(res), "images")
     run_command("images")
+
+    download_latest_images(int(res), "images")
