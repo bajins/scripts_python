@@ -158,7 +158,7 @@ def wait():
         wait()
 
 
-def run_command(directory):
+async def run_command(directory):
     threading.Timer(3600, run_command).start()
     dir_size = FileUtil.count_dir_size(directory)
     if dir_size >= 10737418240:
@@ -192,6 +192,6 @@ if __name__ == '__main__':
     else:
         res = res[0][0]
 
-    run_command("images")
+    asyncio.run(run_command("images"))
 
     download_latest_images(int(res), "images")
