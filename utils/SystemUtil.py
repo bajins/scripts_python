@@ -146,14 +146,16 @@ def restart_process(path):
         # if gc.isenabled():
         #     # 释放内存
         #     gc.collect()
-        print("前进程id：", os.getpid(), "父进程id：", os.getppid())
+        print("当前进程id：", os.getpid())
+        print("前进程组id：", os.getpid())
+        print("父进程id：", os.getppid())
 
         py = "python3" if (os.system("python3 -V") == 0) else "python"
         sysstr = platform.system()
         if sysstr == "Windows":
-            os.system(f"taskkill /pid {os.getpgid()} /f && {py} {path}")
+            os.system(f"taskkill /pid {os.getpid()} /f && {py} {path}")
         elif sysstr == "Linux":
-            os.system(f"kill -9 {os.getpgid()} && {py} {path}")
+            os.system(f"kill -9 {os.getpid()} && {py} {path}")
 
 
 if __name__ == '__main__':
