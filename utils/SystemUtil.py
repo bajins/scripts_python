@@ -141,14 +141,14 @@ def restart_process(path):
     :return:
     """
     if psutil.virtual_memory().percent >= 80:
+        print("当前进程id：", os.getpid())
+        print("前进程组id：", os.getpid())
+        print("父进程id：", os.getppid())
         print('内存使用：', psutil.Process(os.getpid()).memory_info().rss)
         print("当前内存占用率：", psutil.virtual_memory().percent)
         # if gc.isenabled():
         #     # 释放内存
         #     gc.collect()
-        print("当前进程id：", os.getpid())
-        print("前进程组id：", os.getpid())
-        print("父进程id：", os.getppid())
 
         py = "python3" if (os.system("python3 -V") == 0) else "python"
         sysstr = platform.system()
