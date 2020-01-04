@@ -8,17 +8,15 @@
 # @Package: 
 # @Software: PyCharm
 import asyncio
-import gc
 import os
 import re
 import threading
 import time
 
-import psutil
 from bs4 import BeautifulSoup
 
 import Constants
-from utils import ReptileUtil, HttpUtil, ThreadPool, DatabaseUtil, TranslationUtil, FileUtil
+from utils import HttpUtil, DatabaseUtil, TranslationUtil, FileUtil, SystemUtil
 
 s3 = DatabaseUtil.Sqlite3(os.path.join(Constants.DATA_PATH, "wallhaven"))
 
@@ -34,7 +32,7 @@ def download_images(url, page, directory):
     :return:
     """
     try:
-        wait()
+        SystemUtil.restart_process(os.path.abspath(__file__))
 
         html = BeautifulSoup(HttpUtil.get(url + str(page)).text, features="lxml")
         figure = html.find_all("figure")
@@ -139,23 +137,6 @@ def get_tag(page):
     # 如果不是最后一页，那么就继续下载下一页
     if page != page_total:
         get_tag(page + 1)
-
-
-def wait():
-    """
-    垃圾回收
-    :return:
-    """
-    if psutil.virtual_memory().percent >= 80:
-        print('内存使用：', psutil.Process(os.getpid()).memory_info().rss)
-        print("当前内存占用率：", psutil.virtual_memory().percent)
-        print("垃圾回收机制是否打开:", gc.isenabled())
-        # 释放内存
-        gc.collect()
-        print('内存使用：', psutil.Process(os.getpid()).memory_info().rss)
-        print("当前内存占用率：", psutil.virtual_memory().percent)
-    if psutil.virtual_memory().percent >= 80:
-        wait()
 
 
 async def run_command(directory):

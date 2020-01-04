@@ -8,18 +8,16 @@
 # @Package: 
 # @Software: PyCharm
 import asyncio
-import gc
 import os
 import re
 import threading
 import time
 
-import psutil
 import zhconv
 from bs4 import BeautifulSoup
 
 import Constants
-from utils import ReptileUtil, HttpUtil, ThreadPool, DatabaseUtil, FileUtil
+from utils import HttpUtil, DatabaseUtil, FileUtil, SystemUtil
 
 s3 = DatabaseUtil.Sqlite3(os.path.join(Constants.DATA_PATH, "pexels"))
 
@@ -28,7 +26,7 @@ run_count = 0
 
 def download_latest_images(page, directory):
     try:
-        wait()
+        SystemUtil.restart_process(os.path.abspath(__file__))
 
         html = BeautifulSoup(HttpUtil.get("https://www.pexels.com/zh-cn/new-photos?page=" + str(page)).text,
                              features="lxml")
@@ -90,19 +88,6 @@ def download_latest_images(page, directory):
         print("当前活跃线程数:", threading.activeCount())
         time.sleep(400)
         download_latest_images(page, directory)
-
-
-def wait():
-    if psutil.virtual_memory().percent >= 80:
-        print('内存使用：', psutil.Process(os.getpid()).memory_info().rss)
-        print("当前内存占用率：", psutil.virtual_memory().percent)
-        print("垃圾回收机制是否打开:", gc.isenabled())
-        # 释放内存
-        gc.collect()
-        print('内存使用：', psutil.Process(os.getpid()).memory_info().rss)
-        print("当前内存占用率：", psutil.virtual_memory().percent)
-    if psutil.virtual_memory().percent >= 80:
-        wait()
 
 
 async def run_command(directory):

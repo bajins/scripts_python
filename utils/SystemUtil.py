@@ -8,10 +8,13 @@
 # @Package: 
 # @Software: PyCharm
 import ctypes
+import gc
+import os
+import platform
 import sys
 from subprocess import call
-from pip._internal.utils.misc import get_installed_distributions
-import pkg_resources
+
+import psutil
 
 
 def check_version():
@@ -33,6 +36,8 @@ def update_lib():
     更新依赖方式一
     :return:
     """
+    from pip._internal.utils.misc import get_installed_distributions
+
     packages = [dist.project_name for dist in get_installed_distributions()]
     call("pip install --upgrade" + ' '.join(packages), shell=True)
 
@@ -42,6 +47,8 @@ def update_lib_two():
     更新依赖方式二
     :return:
     """
+    import pkg_resources
+
     packages = [dist.project_name for dist in pkg_resources.working_set]
     call("pip install --upgrade" + ' '.join(packages), shell=True)
 
@@ -127,5 +134,28 @@ def update_fire_wall(key_name='PublicProfile'):
     winreg.CloseKey(regRoot)
 
 
+def restart_process(path):
+    """
+    当内存占用达到一定比例进程重启
+    :param path: 执行脚本的全路径
+    :return:
+    """
+    if psutil.virtual_memory().percent < 80:
+        print('内存使用：', psutil.Process(os.getpid()).memory_info().rss)
+        print("当前内存占用率：", psutil.virtual_memory().percent)
+        # if gc.isenabled():
+        #     # 释放内存
+        #     gc.collect()
+        print("前进程id：", os.getpid(), "父进程id：", os.getppid())
+
+        py = "python3" if (os.system("python3 -V") == 0) else "python"
+        sysstr = platform.system()
+        if sysstr == "Windows":
+            os.system(f"taskkill /pid {os.getpgid()} /f && {py} {path}")
+        elif sysstr == "Linux":
+            os.system(f"kill -9 {os.getpgid()} && {py} {path}")
+
+
 if __name__ == '__main__':
-    print(get_windows_software())
+    # print(get_windows_software())
+    restart_process(os.path.abspath(__file__))
