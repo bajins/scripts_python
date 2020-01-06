@@ -90,8 +90,7 @@ def download_latest_images(page, directory):
         download_latest_images(page, directory)
 
 
-async def run_command(directory):
-    threading.Timer(21600, run_command, directory).start()
+def run_command(directory):
     dir_size = FileUtil.count_dir_size(directory)
     if dir_size >= 107374182400:
         print(FileUtil.size_unit_format(dir_size))
@@ -99,6 +98,7 @@ async def run_command(directory):
         print(FileUtil.size_unit_format(FileUtil.count_dir_size(directory)))
     print(os.popen("rclone dedupe gdrive:/images --dedupe-mode newest").read())
     print(os.popen("rclone delete gdrive:/images --max-size 100k").read())
+    threading.Timer(21600, run_command, directory).start()
 
 
 if __name__ == '__main__':
@@ -122,6 +122,6 @@ if __name__ == '__main__':
     else:
         res = res[0][0]
 
-    asyncio.run(run_command("images"))
+    threading.Thread(target=run_command, args="images").start()
 
     download_latest_images(int(res), "images")
