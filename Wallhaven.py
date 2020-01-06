@@ -140,7 +140,7 @@ def get_tag(page):
 
 
 async def run_command(directory):
-    threading.Timer(3600, run_command).start()
+    threading.Timer(3600, run_command, directory).start()
     dir_size = FileUtil.count_dir_size(directory)
     if dir_size >= 10737418240:
         print(FileUtil.size_unit_format(dir_size))

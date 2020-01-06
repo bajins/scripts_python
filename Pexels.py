@@ -91,7 +91,7 @@ def download_latest_images(page, directory):
 
 
 async def run_command(directory):
-    threading.Timer(21600, run_command).start()
+    threading.Timer(21600, run_command, directory).start()
     dir_size = FileUtil.count_dir_size(directory)
     if dir_size >= 107374182400:
         print(FileUtil.size_unit_format(dir_size))
