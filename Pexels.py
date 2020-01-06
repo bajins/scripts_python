@@ -98,7 +98,7 @@ def run_command(directory):
         print(FileUtil.size_unit_format(FileUtil.count_dir_size(directory)))
     print(os.popen("rclone dedupe gdrive:/images --dedupe-mode newest").read())
     print(os.popen("rclone delete gdrive:/images --max-size 100k").read())
-    threading.Timer(21600, run_command, directory).start()
+    threading.Timer(21600, run_command, (directory,)).start()
 
 
 if __name__ == '__main__':
@@ -122,6 +122,6 @@ if __name__ == '__main__':
     else:
         res = res[0][0]
 
-    threading.Thread(target=run_command, args="images").start()
+    threading.Thread(target=run_command, args=("images",)).start()
 
     download_latest_images(int(res), "images")
