@@ -142,7 +142,7 @@ def restart_process(path):
     """
     if psutil.virtual_memory().percent >= 80:
         print("当前进程id：", os.getpid())
-        print("前进程组id：", os.getpid())
+        print("前进程组id：", os.getpgid(), os.getpgrp())
         print("父进程id：", os.getppid())
         print('内存使用：', psutil.Process(os.getpid()).memory_info().rss)
         print("当前内存占用率：", psutil.virtual_memory().percent)
