@@ -157,15 +157,12 @@ def send_mail(mail: str, product: str):
     elif product == "xftp":
         productCode = "4242"
         productName = "xftp-download"
-
     elif product == "xmanager-power-suite":
         productCode = "4066"
         productName = "xmanager-power-suite-download"
-
     elif product == "xshell-plus":
         productCode = "4132"
         productName = "xshell-plus-download"
-
     if productCode == "" or productName == "":
         raise MsgException("产品不匹配")
 
@@ -212,11 +209,12 @@ def get_url(lang: str, token: str):
     if lang == 'pt':
         language = '9'
     data = {
-        'md': 'checkDownload',
-        'token': token,
-        'language': language
+        'md': (None, 'checkDownload'),
+        'token': (None, token),
+        'language': (None, language)
     }
-    res = HttpUtil.post("https://www.netsarang.com/json/download/process.html", data)
+    res = requests.post("https://www.netsarang.com/json/download/process.html", data,
+                        headers={"User-Agent": HttpUtil.USER_AGENT}, verify=False, timeout=600)
     return json.load(res.text)
 
 
