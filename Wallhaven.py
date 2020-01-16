@@ -63,7 +63,8 @@ def download_images(url, page, directory):
 
             s3.execute_commit(f"""
             INSERT OR IGNORE INTO images(image_id,suffix,url,type,page,tags) 
-            VALUES('{image_id}','{download_url[download_url.rfind(".") + 1:]}','{download_url}','latest','{page}','{tags}')
+            VALUES('{image_id}','{download_url[download_url.rfind(".") + 1:]}',
+            '{download_url}','latest','{page}','{tags}')
             """)
 
             image_name = download_url.split("/")

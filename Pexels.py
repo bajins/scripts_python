@@ -17,7 +17,7 @@ import zhconv
 from bs4 import BeautifulSoup
 
 import Constants
-from utils import HttpUtil, DatabaseUtil, FileUtil, SystemUtil
+from utils import HttpUtil, DatabaseUtil, FileUtil, SystemUtil, TranslationUtil
 
 s3 = DatabaseUtil.Sqlite3(os.path.join(Constants.DATA_PATH, "pexels"))
 
@@ -28,8 +28,8 @@ def download_latest_images(page, directory):
     try:
         SystemUtil.restart_process(os.path.abspath(__file__))
 
-        html = BeautifulSoup(HttpUtil.get("https://www.pexels.com/zh-cn/new-photos?page=" + str(page)).text,
-                             features="lxml")
+        html = BeautifulSoup(HttpUtil.get("https://www.pexels.com/new-photos?page=" + str(page)).text, features="lxml")
+        print(html)
         articles = html.find_all("article")
         pages_html = BeautifulSoup(str(html.find("div", {"class": "pagination"})), features="lxml").find_all("a")
         page_total = int(pages_html[len(pages_html) - 2].text)
@@ -48,16 +48,18 @@ def download_latest_images(page, directory):
             download_url = article["data-photo-modal-image-download-link"]
             image_name = f"pexels-photo-{image_id}.jpg"
 
-            info_html = BeautifulSoup(HttpUtil.get("https://www.pexels.com/zh-cn/photo/" + image_id).text,
-                                      features="lxml")
+            info_html = BeautifulSoup(HttpUtil.get("https://www.pexels.com/photo/" + image_id).text, features="lxml")
             tags = info_html.find("meta", {"name": "keywords"}).attrs["content"]
             if len(tags) > 0 and tags != "":
                 # 简繁转换
-                tags = zhconv.convert(tags[:len(tags) - 7], 'zh-cn')
+                # tags = zhconv.convert(tags[:len(tags) - 7], 'zh-cn')
+                # tags = re.sub(r"[^a-z,\u4e00-\u9fa5]+|^,|,$", "", tags).replace(",,", ",")
+                tags = TranslationUtil.translate_google(tags).replace("，", ",")
                 tags = re.sub(r"[^a-z,\u4e00-\u9fa5]+|^,|,$", "", tags).replace(",,", ",")
             s3.execute_commit(f"""
             INSERT OR IGNORE INTO images(image_id,suffix,url,type,page,tags) 
-            VALUES('{image_id}','{download_url[download_url.rfind(".") + 1:]}','{download_url}','latest','{page}','{tags}')
+            VALUES('{image_id}','{download_url[download_url.rfind(".") + 1:]}',
+            '{download_url}','latest','{page}','{tags}')
             """)
             # dl = info_html.find(lambda tag: tag.has_attr('data-id') and tag.has_attr('href')).attrs["href"]
             # dl = info_html.find(lambda tag: tag.has_attr('data-id') and tag.has_attr('data-url')).attrs["data-url"]
@@ -122,6 +124,6 @@ if __name__ == '__main__':
     else:
         res = res[0][0]
 
-    threading.Thread(target=run_command, args=("images",)).start()
+    # threading.Thread(target=run_command, args=("images",)).start()
 
     download_latest_images(int(res), "images")
