@@ -10,9 +10,11 @@
 
 
 import base64
+import json
 import time
 from datetime import datetime
 
+import requests
 from bs4 import BeautifulSoup
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.wait import WebDriverWait
@@ -21,10 +23,12 @@ import Mail
 from utils import HttpUtil, StringUtil, ReptileUtil, TimeUtil
 from utils.ExceptionUtil import MsgException
 
+netsarang_info = {}
 
-def send_mail(mail, product):
+
+def send_mail_dp(mail: str, product: str):
     """
-    根据产品和邮箱让Netsarang发送邮件
+    通过ChromeDP发送邮件
     :param mail:    邮箱
     :param product: 产品
     :return:
@@ -68,12 +72,9 @@ def send_mail(mail, product):
         driver.quit()
 
 
-netsarang_info = {}
-
-
-def download(product):
+def get_url_dp(product):
     """
-    获取下载链接地址
+    通过ChromeDP获取下载产品信息
     :param product: 产品
     :return:
     """
@@ -92,7 +93,7 @@ def download(product):
     Mail.lin_shi_you_xiang_apply(prefix)
     mail = prefix + suffix
 
-    send_mail(mail, product)
+    send_mail_dp(mail, product)
 
     time.sleep(10)
 
@@ -141,5 +142,83 @@ def download(product):
     return href
 
 
+def send_mail(mail: str, product: str):
+    """
+    使用requests发送邮件
+    :param mail:
+    :param product:
+    :return:
+    """
+    productCode = ""
+    productName = ""
+    if product == "xshell":
+        productCode = "4203"
+        productName = "xshell-download"
+    elif product == "xftp":
+        productCode = "4242"
+        productName = "xftp-download"
+
+    elif product == "xmanager-power-suite":
+        productCode = "4066"
+        productName = "xmanager-power-suite-download"
+
+    elif product == "xshell-plus":
+        productCode = "4132"
+        productName = "xshell-plus-download"
+
+    if productCode == "" or productName == "":
+        raise MsgException("产品不匹配")
+
+    data = {
+        "_wpcf7": (None, "3016"),
+        "_wpcf7_version": (None, "5.1.1"),
+        "_wpcf7_locale": (None, "en_US"),
+        "_wpcf7_unit_tag": (None, f"wpcf7-f3016-p{productCode}-o2"),
+        "_wpcf7_container_post": (None, productCode),
+        "g-recaptcha-response": (None, ""),
+        "md": (None, "setDownload"),
+        "language": (None, "3"),
+        "downloadType": (None, "0"),
+        "licenseType": (None, "0"),
+        "action": (None, "/json/download/process.html"),
+        "user-name": (None, mail),
+        "email": (None, mail),
+        "company": (None, ""),
+        "productName": (None, productName),
+    }
+    res = requests.post("https://www.netsarang.com/json/download/process.html", data,
+                        headers={"User-Agent": HttpUtil.USER_AGENT}, verify=False, timeout=600)
+    res = json.load(res.text)
+    if not res or res["errorCounter"] != 0 or not res["result"]:
+        raise MsgException("邮箱发送失败！")
+
+
+def get_url(lang: str, token: str):
+    """
+    使用requests获取url
+    :param lang:
+    :param token:
+    :return:
+    """
+    language = "2"
+    if lang == 'en':
+        language = '2'
+    if lang == 'ko':
+        language = '1'
+    if lang == 'zh':
+        language = '3'
+    if lang == 'ru':
+        language = '8'
+    if lang == 'pt':
+        language = '9'
+    data = {
+        'md': 'checkDownload',
+        'token': token,
+        'language': language
+    }
+    res = HttpUtil.post("https://www.netsarang.com/json/download/process.html", data)
+    return json.load(res.text)
+
+
 if __name__ == '__main__':
-    print(download("xshell"))
+    print(get_url_dp("xshell"))
