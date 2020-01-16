@@ -35,15 +35,16 @@ def send_mail_dp(mail: str, product: str):
     """
     if product == "xshell":
         url = "https://www.netsarang.com/zh/xshell-download"
-
-    if product == "xftp":
+    elif product == "xftp":
         url = "https://www.netsarang.com/zh/xftp-download"
-
-    if product == "xmanager-power-suite":
-        url = "https://www.netsarang.com/zh/xmanager-power-suite-download"
-
-    if product == "xshell-plus":
+    elif product == "xlpd":
+        url = "https://www.netsarang.com/zh/Xlpd"
+    elif product == "xmanager":
+        url = "https://www.netsarang.com/zh/xmanager-download"
+    elif product == "xshellplus":
         url = "https://www.netsarang.com/zh/xshell-plus-download"
+    elif product == "powersuite":
+        url = "https://www.netsarang.com/zh/xmanager-power-suite-download"
 
     try:
         driver = ReptileUtil.selenium_driver(url)
@@ -149,29 +150,36 @@ def send_mail(mail: str, product: str):
     :param product:
     :return:
     """
-    productCode = ""
-    productName = ""
+    product_code = ""
+    product_name = ""
     if product == "xshell":
-        productCode = "4203"
-        productName = "xshell-download"
+        product_code = "4203"
+        product_name = "xshell-download"
     elif product == "xftp":
-        productCode = "4242"
-        productName = "xftp-download"
-    elif product == "xmanager-power-suite":
-        productCode = "4066"
-        productName = "xmanager-power-suite-download"
-    elif product == "xshell-plus":
-        productCode = "4132"
-        productName = "xshell-plus-download"
-    if productCode == "" or productName == "":
+        product_code = "4242"
+        product_name = "xftp-download"
+    elif product == "xlpd":
+        product_code = "4280"
+        product_name = "xlpd-download"
+    elif product == "xmanager":
+        product_code = "4162"
+        product_name = "xmanager-download"
+    elif product == "xshellplus":
+        product_code = "4132"
+        product_name = "xshell-plus-download"
+    elif product == "powersuite":
+        product_code = "4066"
+        product_name = "xmanager-power-suite-download"
+
+    if product_code == "" or product_name == "":
         raise MsgException("产品不匹配")
 
     data = {
         "_wpcf7": (None, "3016"),
         "_wpcf7_version": (None, "5.1.1"),
         "_wpcf7_locale": (None, "en_US"),
-        "_wpcf7_unit_tag": (None, f"wpcf7-f3016-p{productCode}-o2"),
-        "_wpcf7_container_post": (None, productCode),
+        "_wpcf7_unit_tag": (None, f"wpcf7-f3016-p{product_code}-o2"),
+        "_wpcf7_container_post": (None, product_code),
         "g-recaptcha-response": (None, ""),
         "md": (None, "setDownload"),
         "language": (None, "3"),
@@ -181,7 +189,7 @@ def send_mail(mail: str, product: str):
         "user-name": (None, mail),
         "email": (None, mail),
         "company": (None, ""),
-        "productName": (None, productName),
+        "product_name": (None, product_name),
     }
     res = requests.post("https://www.netsarang.com/json/download/process.html", data,
                         headers={"User-Agent": HttpUtil.USER_AGENT}, verify=False, timeout=600)
