@@ -15,9 +15,14 @@ import time
 
 import zhconv
 from bs4 import BeautifulSoup
+from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver import ActionChains
+from selenium.webdriver.common.keys import Keys
 
 import Constants
-from utils import HttpUtil, DatabaseUtil, FileUtil, SystemUtil, TranslationUtil
+from utils import HttpUtil, DatabaseUtil, FileUtil, SystemUtil, TranslationUtil, ReptileUtil
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
 
 s3 = DatabaseUtil.Sqlite3(os.path.join(Constants.DATA_PATH, "pexels"))
 
@@ -28,8 +33,8 @@ def download_latest_images(page, directory):
     try:
         SystemUtil.restart_process(os.path.abspath(__file__))
 
-        html = BeautifulSoup(HttpUtil.get("https://www.pexels.com/new-photos?page=" + str(page)).text, features="lxml")
-        print(html)
+        html = BeautifulSoup(HttpUtil.get("https://www.pexels.com/zh-cn/new-photos?page=" + str(page)).text,
+                             features="lxml")
         articles = html.find_all("article")
         pages_html = BeautifulSoup(str(html.find("div", {"class": "pagination"})), features="lxml").find_all("a")
         page_total = int(pages_html[len(pages_html) - 2].text)
@@ -48,13 +53,12 @@ def download_latest_images(page, directory):
             download_url = article["data-photo-modal-image-download-link"]
             image_name = f"pexels-photo-{image_id}.jpg"
 
-            info_html = BeautifulSoup(HttpUtil.get("https://www.pexels.com/photo/" + image_id).text, features="lxml")
+            info_html = BeautifulSoup(HttpUtil.get("https://www.pexels.com/zh-cn/photo/" + image_id).text,
+                                      features="lxml")
             tags = info_html.find("meta", {"name": "keywords"}).attrs["content"]
             if len(tags) > 0 and tags != "":
                 # 简繁转换
-                # tags = zhconv.convert(tags[:len(tags) - 7], 'zh-cn')
-                # tags = re.sub(r"[^a-z,\u4e00-\u9fa5]+|^,|,$", "", tags).replace(",,", ",")
-                tags = TranslationUtil.translate_google(tags).replace("，", ",")
+                tags = zhconv.convert(tags[:len(tags) - 7], 'zh-cn')
                 tags = re.sub(r"[^a-z,\u4e00-\u9fa5]+|^,|,$", "", tags).replace(",,", ",")
             s3.execute_commit(f"""
             INSERT OR IGNORE INTO images(image_id,suffix,url,type,page,tags) 
@@ -87,6 +91,76 @@ def download_latest_images(page, directory):
     except Exception as e:
         print(e)
     finally:
+        print("当前活跃线程数:", threading.activeCount())
+        time.sleep(400)
+        download_latest_images(page, directory)
+
+
+def download_latest_images_selenium(page, directory):
+    """
+    使用selenium获取
+    :param page:
+    :param directory:
+    :return:
+    """
+    try:
+        # SystemUtil.restart_process(os.path.abspath(__file__))
+        driver = ReptileUtil.selenium_driver("https://www.pexels.com/new-photos?page=" + str(page))
+        articles = driver.find_elements_by_tag_name("article")
+        next_page = True
+        try:
+            driver.find_element_by_xpath("/html/body/section/div[4]/div/a[@rel='next']")
+        except Exception as e:
+            next_page = False
+        # 获取当前所有窗口句柄（窗口A、B）
+        main_window = driver.current_window_handle
+        print(articles)
+        for article in articles:
+            # 图片id
+            image_id = article.get_attribute("data-photo-modal-medium-id")
+            info_url = "https://www.pexels.com/photo/" + image_id
+            # 通过执行js打开新标签页并访问url
+            driver.execute_script(f"window.open('{info_url}')")
+            driver.switch_to.window(driver.window_handles[-1])
+            tags = ""
+            if driver.title.find("500") == -1:
+                tags = driver.find_element_by_xpath("//meta[@name='keywords']").get_attribute("content")
+                tags = TranslationUtil.translate_google(tags).replace("，", ",")
+                tags = re.sub(r"[^a-z,\u4e00-\u9fa5]+|^,|,$", "", tags).replace(",,", ",")
+            # 关闭当前窗口。
+            driver.close()
+            # 关闭新选项卡后回到主窗口，必须做这一步，否则会引发错误
+            driver.switch_to.window(main_window)
+            # 图片下载链接
+            download_url = f"https://images.pexels.com/photos/{image_id}/pexels-photo-{image_id}.jpeg?dl={image_id}.jpg"
+            s3.execute_commit(f"""
+            INSERT OR IGNORE INTO images(image_id,suffix,url,type,page,tags) 
+            VALUES('{image_id}','jpg','{download_url}','latest','{page}','{tags}')
+            """)
+            image_name = f"pexels-photo-{image_id}.jpg"
+            # 判断文件是否存在
+            if not os.path.exists(os.path.join(directory, image_name)):
+                asyncio.run(HttpUtil.download_one_async(download_url, directory, image_name))
+        global run_count
+        run_count += 1
+
+        # 如果获取到的页数大于0不是最后一页
+        if next_page and run_count <= 10:
+            download_latest_images(page + 1, directory)
+        else:
+            if next_page:
+                page += 1
+            else:
+                page = 1
+            run_count = 0
+
+    except Exception as e:
+        print(e)
+    finally:
+        # 关闭当前窗口。
+        driver.close()
+        # 关闭浏览器并关闭chreomedriver进程
+        driver.quit()
         print("当前活跃线程数:", threading.activeCount())
         time.sleep(400)
         download_latest_images(page, directory)
@@ -126,4 +200,5 @@ if __name__ == '__main__':
 
     # threading.Thread(target=run_command, args=("images",)).start()
 
-    download_latest_images(int(res), "images")
+    # download_latest_images(int(res), "images")
+    download_latest_images_selenium(int(res), "images")
