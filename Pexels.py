@@ -103,9 +103,9 @@ def download_latest_images_selenium(page, directory):
     :param directory:
     :return:
     """
+    SystemUtil.restart_process(os.path.abspath(__file__))
+    driver = ReptileUtil.selenium_driver("https://www.pexels.com/new-photos?page=" + str(page))
     try:
-        # SystemUtil.restart_process(os.path.abspath(__file__))
-        driver = ReptileUtil.selenium_driver("https://www.pexels.com/new-photos?page=" + str(page))
         articles = driver.find_elements_by_tag_name("article")
         next_page = True
         try:
