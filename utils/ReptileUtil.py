@@ -125,7 +125,8 @@ def selenium_driver(url, debug=False):
     options.add_argument(f'--user-agent={HttpUtil.USER_AGENT}')
     # 启动即窗口最大化
     options.add_argument("--start-maximized")
-
+    # 关闭"chrome正受到自动测试软件的控制"提示
+    options.add_argument("disable-infobars")
     if not debug:
         # 设置chrome浏览器无界面模式
         options.add_argument('--headless')
@@ -165,13 +166,12 @@ def selenium_driver(url, debug=False):
             'safebrowsing.enabled': False,
             'safebrowsing.disable_download_protection': True,
             'profile.default_content_setting_values': {
-                # 禁用浏览器弹窗
+                # 关掉浏览器左上角的通知提示
                 'notifications': 2,
                 "automatic_downloads": 0
             }
         }
         options.add_experimental_option('prefs', prefs)
-
     capa = DesiredCapabilities.CHROME
     # 懒加载模式，不等待页面加载完毕
     # capa["pageLoadStrategy"] = "none"
