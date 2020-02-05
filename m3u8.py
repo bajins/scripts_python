@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8 -*-
 #
-# @Description: 
+# @Description: 根据m3u8描述文件下载文件
 # @PreInstall: 
 # @Author : https://www.bajins.com
-# @File : m3u8Download.py
+# @File : m3u8.py
 # @Version: 1.0.0
 # @Time : 2020/1/11 22:09
 # @Project: reptile-python
