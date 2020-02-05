@@ -190,8 +190,7 @@ def download_file(url, mkdir, name=""):
     # 判断文件是否存在
     # if not os.path.exists(name):
     if not os.path.isfile(name):
-        reqs = requests.get(url, headers={"User-Agent": USER_AGENT}, verify=False, timeout=600)
-        with reqs as req:
+        with requests.get(url, headers={"User-Agent": USER_AGENT}, verify=False, timeout=600) as req:
             with open(name, "wb") as f:
                 f.write(req.content)
     return name
