@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8 -*-
 #
-# @Description: 机械工业出版社PDF下载，参考：https://github.com/Echowxsy/CMPEDUDownload
+# @Description: 机械工业出版社PDF下载，参考：https://github.com/Echowxsy/CMPEDUDownload https://github.com/yqylh/-Reptile
 # @PreInstall: 
 # @Author : https://www.bajins.com
 # @File : cmpedu.py
