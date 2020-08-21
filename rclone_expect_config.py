@@ -333,14 +333,15 @@ print(subprocess.getoutput(f'./{rclone_dir}/rclone config show'))
 以下为执行rclone命令，执行命令不输出回显可使用call_cmd函数执行命令或调用daemon函数
 """
 
-# daemon()
-
-params = " --multi-thread-cutoff 50M --multi-thread-streams 50 --transfers 100 --checkers 100 --buffer-size 80M"
+params = " --multi-thread-cutoff 50M --multi-thread-streams 50 --transfers 100 --checkers 100 --buffer-size 50M"
 params += "--cache-chunk-size 50M --tpslimit-burst 2 --ignore-errors -P"
 
 # 同步
-# call_cmd(f'./{rclone_dir}/rclone sync gdrive:/ onedrive:/ {params}')
-popen_cmd(f'./{rclone_dir}/rclone sync gdrive:/ onedrive:/ {params}')
-
+cmd = f'./{rclone_dir}/rclone sync gdrive:/ onedrive:/ {params}'
 # 去重
-popen_cmd(f'./{rclone_dir}/rclone dedupe --dedupe-mode oldest gdrive:/ {params}')
+# cmd = f'./{rclone_dir}/rclone dedupe --dedupe-mode oldest gdrive:/ {params}'
+
+# call_cmd(cmd)
+
+# daemon()
+popen_cmd(cmd)
