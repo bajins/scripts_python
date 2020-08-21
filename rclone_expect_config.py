@@ -31,7 +31,19 @@ def daemon():
         os._exit(0)
 
 
-def run_cmd(cmd, charset="utf8"):
+def call_cmd(cmd, log_path="rclone.log"):
+    """
+    执行命令不输出回显并输出日志到文件
+    :param cmd: 执行的命令
+    :param log_path: 日志文件路径
+    :return:
+    """
+    call = subprocess.call(f'nohup {cmd} >{log_path} &', shell=True)
+    if call != 0:
+        print(f"执行失败，请查看{log_path}中的日志")
+
+
+def popen_cmd(cmd, charset="utf8"):
     """
     执行shell命令并实时输出回显
     :param cmd: 执行的命令
@@ -318,16 +330,17 @@ write_google_drive_config(rclone_dir, "gdrive", google_drive_token)
 print(subprocess.getoutput(f'./{rclone_dir}/rclone config show'))
 
 """
-以下为执行rclone命令，执行命令不输出回显可在执行命令前加上nohup命令或调用daemon函数
+以下为执行rclone命令，执行命令不输出回显可使用call_cmd函数执行命令或调用daemon函数
 """
 
 # daemon()
 
-params = " --multi-thread-cutoff 50M --multi-thread-streams 50 --transfers 1000 --checkers 1000 --buffer-size 80M"
+params = " --multi-thread-cutoff 50M --multi-thread-streams 50 --transfers 100 --checkers 100 --buffer-size 80M"
 params += "--cache-chunk-size 50M --tpslimit-burst 2 --ignore-errors -P"
 
 # 同步
-run_cmd(f'./{rclone_dir}/rclone sync gdrive:/ onedrive:/ {params}')
+# call_cmd(f'./{rclone_dir}/rclone sync gdrive:/ onedrive:/ {params}')
+popen_cmd(f'./{rclone_dir}/rclone sync gdrive:/ onedrive:/ {params}')
 
 # 去重
-run_cmd(f'./{rclone_dir}/rclone dedupe --dedupe-mode oldest gdrive:/ {params}')
+popen_cmd(f'./{rclone_dir}/rclone dedupe --dedupe-mode oldest gdrive:/ {params}')
