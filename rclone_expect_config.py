@@ -334,7 +334,7 @@ print(subprocess.getoutput(f'./{rclone_dir}/rclone config show'))
 """
 
 params = " --multi-thread-cutoff 50M --multi-thread-streams 50 --transfers 100 --checkers 100 --buffer-size 50M"
-params += "--cache-chunk-size 50M --tpslimit-burst 2 --ignore-errors -P"
+params += " --cache-chunk-size 50M --tpslimit-burst 2 --ignore-errors -P"
 
 # 同步
 cmd = f'./{rclone_dir}/rclone sync gdrive:/ onedrive:/ {params}'
