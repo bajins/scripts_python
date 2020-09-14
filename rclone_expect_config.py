@@ -286,13 +286,17 @@ def google_drive(rclone_dir, drive_name):
     time.sleep(5)
 
 
-def write_google_drive_config(rclone_dir, name, token, drive_type="drive", scope="drive"):
+def write_google_drive_config(rclone_dir, name, token, drive_type="drive", scope="drive", team_drive=None,
+                              root_folder_id=None, shared_with_me=None):
     """
     此函数是为了方便写入在其他地方已经授权复制过来的Google Drive配置，而不需要重新创建配置
     :param name: 自定义远程配置名称
     :param token: 授权token
     :param drive_type: drive类型，一般默认即可
-    :param scope: 一般默认即可
+    :param scope: rclone从驱动器请求访问时应使用的范围，对应--drive-scope参数
+    :param team_drive: 团队驱动器的ID，对应--drive-team-drive参数
+    :param root_folder_id: 根文件夹的ID，对应--drive-root-folder-id参数
+    :param shared_with_me: 只显示与我共享的文件，对应--drive-shared-with-me参数
     :return:
     """
     import configparser
@@ -311,6 +315,13 @@ def write_google_drive_config(rclone_dir, name, token, drive_type="drive", scope
         conf.set(name, 'type', drive_type)
         conf.set(name, 'scope', scope)
         conf.set(name, 'token', token)
+        if team_drive is not None:
+            conf.set(name, 'team_drive', team_drive)
+        if root_folder_id is not None:
+            conf.set(name, 'root_folder_id', root_folder_id)
+        if shared_with_me is not None:
+            # "true" 或 ”false"
+            conf.set(name, 'shared_with_me', shared_with_me)
         with open(file, 'w') as f:
             conf.write(f)
 
@@ -326,6 +337,11 @@ one_drive(rclone_dir, "onedrive", one_drive_access_token)
 
 google_drive_token = """授权"""
 write_google_drive_config(rclone_dir, "gdrive", google_drive_token)
+# 团队盘配置
+write_google_drive_config(rclone_dir, "gdrive_team", google_drive_token, team_drive="0AFZsAUl3VSwzUk9PVA")
+# 分享链接配置
+write_google_drive_config(rclone_dir, "gdrive_stared", google_drive_token,
+                          root_folder_id="10USshsyfY01grYZzSHMq60lo1H_WVVZH")
 
 print(subprocess.getoutput(f'./{rclone_dir}/rclone config show'))
 
@@ -335,6 +351,10 @@ print(subprocess.getoutput(f'./{rclone_dir}/rclone config show'))
 
 params = " --multi-thread-cutoff 50M --multi-thread-streams 50 --transfers 100 --checkers 100 --buffer-size 50M"
 params += " --cache-chunk-size 50M --tpslimit-burst 2 --ignore-errors -P"
+# --fast-list 如果可用，请使用递归列表。使用更多的内存，但更少的事务
+
+# 复制分享的链接文件或目录到团队盘，允许Google Drive服务器端操作跨不同的驱动器，不走本地流量
+gdrive_stared_copy = f'./{rclone_dir}/rclone copy --drive-server-side-across-configs gdrive_stared: gdrive_team: -P'
 
 # 同步
 cmd = f'./{rclone_dir}/rclone sync gdrive:/ onedrive:/ {params}'
