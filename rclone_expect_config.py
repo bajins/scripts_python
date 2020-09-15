@@ -355,6 +355,10 @@ params += " --cache-chunk-size 50M --tpslimit-burst 2 --ignore-errors -P"
 
 # 复制分享的链接文件或目录到团队盘，允许Google Drive服务器端操作跨不同的驱动器，不走本地流量
 gdrive_stared_copy = f'./{rclone_dir}/rclone copy --drive-server-side-across-configs gdrive_stared: gdrive_team: -P'
+# 我的云盘同步到团队盘，允许Google Drive服务器端操作跨不同的驱动器，不走本地流量
+gdrive_team_sync = f'./{rclone_dir}/rclone sync --drive-server-side-across-configs gdrive: gdrive_team: -P'
+# 查看目录大小
+gdrive_size = f'./{rclone_dir}/rclone size --drive-server-side-across-configs gdrive: '
 
 # 同步
 cmd = f'./{rclone_dir}/rclone sync gdrive:/ onedrive:/ {params}'
@@ -364,4 +368,7 @@ cmd = f'./{rclone_dir}/rclone sync gdrive:/ onedrive:/ {params}'
 # call_cmd(cmd)
 
 # daemon()
+# popen_cmd(gdrive_stared_copy)
+# popen_cmd(gdrive_team_sync)
+# popen_cmd(gdrive_size)
 popen_cmd(cmd)
