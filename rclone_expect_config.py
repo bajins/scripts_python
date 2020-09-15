@@ -352,13 +352,14 @@ print(subprocess.getoutput(f'./{rclone_dir}/rclone config show'))
 params = " --multi-thread-cutoff 50M --multi-thread-streams 50 --transfers 100 --checkers 100 --buffer-size 50M"
 params += " --cache-chunk-size 50M --tpslimit-burst 2 --ignore-errors -P"
 # --fast-list 如果可用，请使用递归列表。使用更多的内存，但更少的事务
+# --drive-server-side-across-configs 允许Google Drive服务器端操作跨不同的驱动器，不走本地流量
 
-# 复制分享的链接文件或目录到团队盘，允许Google Drive服务器端操作跨不同的驱动器，不走本地流量
-gdrive_stared_copy = f'./{rclone_dir}/rclone copy --drive-server-side-across-configs gdrive_stared: gdrive_team: -P'
-# 我的云盘同步到团队盘，允许Google Drive服务器端操作跨不同的驱动器，不走本地流量
-gdrive_team_sync = f'./{rclone_dir}/rclone sync --drive-server-side-across-configs gdrive: gdrive_team: -P'
-# 查看目录大小
-gdrive_size = f'./{rclone_dir}/rclone size --drive-server-side-across-configs gdrive: '
+# 复制分享的链接文件或目录到团队盘
+gdrive_stared_copy = f'./{rclone_dir}/rclone copy --drive-server-side-across-configs gdrive_stared: gdrive_team: {params}'
+# 我的云盘同步到团队盘
+gdrive_team_sync = f'./{rclone_dir}/rclone sync --drive-server-side-across-configs gdrive: gdrive_team: {params}'
+# 查看目录大小，可使用--drive-root-folder-id参数指定其他分享链接ID
+gdrive_size = f'./{rclone_dir}/rclone size gdrive_stared: '
 
 # 同步
 cmd = f'./{rclone_dir}/rclone sync gdrive:/ onedrive:/ {params}'
