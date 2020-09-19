@@ -286,8 +286,8 @@ def google_drive(rclone_dir, drive_name):
     time.sleep(5)
 
 
-def write_google_drive_config(rclone_dir, name, token, drive_type="drive", scope="drive", team_drive=None,
-                              root_folder_id=None, shared_with_me=None):
+def write_google_drive_config(rclone_dir, name, token=None, drive_type="drive", scope="drive", team_drive=None,
+                              root_folder_id=None, shared_with_me=None, service_account_file=None, saf=None):
     """
     此函数是为了方便写入在其他地方已经授权复制过来的Google Drive配置，而不需要重新创建配置
     :param name: 自定义远程配置名称
@@ -297,6 +297,8 @@ def write_google_drive_config(rclone_dir, name, token, drive_type="drive", scope
     :param team_drive: 团队驱动器的ID，对应--drive-team-drive参数
     :param root_folder_id: 根文件夹的ID，对应--drive-root-folder-id参数
     :param shared_with_me: 只显示与我共享的文件，对应--drive-shared-with-me参数
+    :param saf: 服务帐户凭据JSON文件内容，此参数有值且service_account_file为空时默认saf.json
+    :param service_account_file: 服务帐户凭据JSON文件路径，对应--drive-service-account-file参数
     :return:
     """
     import configparser
@@ -314,7 +316,8 @@ def write_google_drive_config(rclone_dir, name, token, drive_type="drive", scope
         conf.add_section(name)
         conf.set(name, 'type', drive_type)
         conf.set(name, 'scope', scope)
-        conf.set(name, 'token', token)
+        if token is not None:
+            conf.set(name, 'token', token)
         if team_drive is not None:
             conf.set(name, 'team_drive', team_drive)
         if root_folder_id is not None:
@@ -322,6 +325,14 @@ def write_google_drive_config(rclone_dir, name, token, drive_type="drive", scope
         if shared_with_me is not None:
             # "true" 或 ”false"
             conf.set(name, 'shared_with_me', shared_with_me)
+        if saf is not None:
+            if service_account_file is None:
+                service_account_file = "saf.json"
+            with open(service_account_file, 'w') as f:
+                f.write(saf)
+        if service_account_file is not None:
+            # 服务账户授权json文件路径 https://rclone.org/drive/#service-account-support
+            conf.set(name, 'service_account_file ', service_account_file)
         with open(file, 'w') as f:
             conf.write(f)
 
@@ -343,6 +354,23 @@ write_google_drive_config(rclone_dir, "gdrive_team", google_drive_token, team_dr
 write_google_drive_config(rclone_dir, "gdrive_stared", google_drive_token,
                           root_folder_id="10USshsyfY01grYZzSHMq60lo1H_WVVZH")
 
+service_account_json = r"""
+{
+  "type": "service_account",
+  "project_id": "elated-emitter-287202",
+  "private_key_id": "4fcf7adfcfb7ee765170156d5dd9807aa5801e65",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQDB0NtpAb6/DImE\n9u9FWOzftzQY3T1OR/pRixGIvtL/VAOQ3ui5O/lXPkQJ5+bB/zrb8YQmhL5Zd0Yp\npUkJ7XFLbQRKWHU3jvW+1DMcRUW/B5uhnuEIyYjBpCH+/wCO6w1rdxAVpudnJF7P\n7mCELH3b8dJ9bEYms7UVHtxuGOud+YnAZolRTYo9tfaFYHg4wJIJmAKPamzf2XkA\nefKUptrRC6sM4FnLnr3w4jGNGlMogOeARY/5MTiImeXFaJ5o67c6KgLjEBumMSuq\n6pvE3S7aWnUEVKYASaz49vBDGuquFCrxZSgS4R5sOxyLOABiPMhKhppTQ+C1zIaz\najEBG9cFAgMBAAECggEAVqDQGPCvPbxQUS6ABsp24Y2EyyJD7xPL5huXJDxKmdYG\n2/9OHNEaIu0RQy40XXyDZeBe1Uqau+lMYnvemAHZlEFvW/2KsuECpR86kwXBZV90\np/oYEjHmHssKaOu4Z6jW8DQg69SUdGz0tdKRsDIktSSylN3KwyyqoPyQwOMBmTMz\nPp71Y+n5ILH8ECMKjmgQJazLZIoCMRarItFqryMkkIfv/rtSd8cgsh7yJIwsBorR\nbKXOVrSobgW700wCmPqU1/X9cwEphHMLJ1/lL7CcvEB0Qaea1P6c0cRNK/waCGml\niJK9QgOjwMcwpbzy1WjtOl7mQ0MOI38WTKd3XNDDZwKBgQDjCoo6lok4h94gfCGr\nPyrn0mKEteSohr8VEZwqnZfMT9Cep4R5hpzZcycEJ23VsZF7PvOTMcvUE6/nelK8\niDGK2N8yYUgkT3mZ8BCTp1QFTocL7uSlOYj0NwTCeVAD8z+fisOcXM4osGejHBUg\nRWx/meFRXEzHetDzb+BM0DgnwwKBgQDaiW1wXUlisIhtYng+SnwMlJBrpZtUXCv+\ndsS8/OTWyzJmiHQl6cwi8OTU4TvMfBaoq9NmsSm35RiuRTbJiMNi4zbVIVKtp9Kp\nHgodlUNz64VhXalUWcta2DsDjWsMBnW0YfCgQ6CtIavu9Dg1MTWNDTrqiJ5I7get\nQdYkkC7hlwKBgAi0scI3XYGmbBUQzXW0kV+cSJzQILl5mUAkkblsm5KBCP3cbI8A\nY2lPKhLVtDd6fJqeOlbNlQRH0PnuTdfe3Q9263ASHOMPjRkjBG+0/drKPRFvEqNn\nRmIe7fbLEg9kt27VslR/loQm54JwpDq9jsCB1Qr6oBMSGYsMIiyv20djAoGAdi/K\nivE4hfH45kdRxkZcDiWucTkv5xCuDkFHJvoR/IQJ7t+vCO4HI4JqDyL8Rxt42aGL\ng8ceS8DPdzghaB7ZpDpDZkJOR3IygJmpWNRnlWJzUPPpZp/lVW0JhWNO2EMKFxK8\nor/QPrGuHV3gpAvH7U+RZFOcXs60QiQP3thHMmMCgYB0QClTCzvF9oqhbIA3K/R4\nteW/NFp+OMx+vExNA9mzI8vfjqgEeTeo1FmvCz8zid0r+3NFY4cSmuZ0Fw1PuPoM\n4i5bAJ+PrqV+qytGZh/M7O0g93jHDA2UspYNR4f2esbO8n+plTMbD7TPQEnZda4J\nMQqwjNFjkAdKIDFuAS8zQA==\n-----END PRIVATE KEY-----\n",
+  "client_email": "rclone@elated-emitter-287202.iam.gserviceaccount.com",
+  "client_id": "105227418884970409788",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/rclone%40elated-emitter-287202.iam.gserviceaccount.com"
+}
+"""
+write_google_drive_config(rclone_dir, "gservicedrive", saf=service_account_json)
+
+
 print(subprocess.getoutput(f'./{rclone_dir}/rclone config show'))
 
 """
@@ -353,6 +381,7 @@ params = " --multi-thread-cutoff 50M --multi-thread-streams 50 --transfers 100 -
 params += " --cache-chunk-size 50M --tpslimit-burst 2 --ignore-errors -P"
 # --fast-list 如果可用，请使用递归列表。使用更多的内存，但更少的事务
 # --drive-server-side-across-configs 允许Google Drive服务器端操作跨不同的驱动器，不走本地流量
+# --drive-V2-download-min-size 指定最小大小文件使用驱动器v2 API下载
 
 # 复制分享的链接文件或目录到团队盘
 gdrive_stared_copy = f'./{rclone_dir}/rclone copy --drive-server-side-across-configs gdrive_stared: gdrive_team: {params}'
