@@ -98,12 +98,12 @@ def download_rclone():
             return dir_name
 
 
-def one_drive(rclone_dir, drive_name, access_token=None):
+def auto_rclone_config_start(rclone_dir, storage, drive_name):
     """
-    One Drive 配置
+    自动配置开始
     :param rclone_dir:  rclone运行目录
+    :param storage:  Microsoft OneDrive:23 , Google Drive:13
     :param drive_name:  自定义远程配置名称
-    :param access_token:  授权token，为执行 rclone authorize "onedrive" 获取到的token
     :return:
     """
     child = pexpect.spawn(f'./{rclone_dir}/rclone config')
@@ -130,7 +130,7 @@ def one_drive(rclone_dir, drive_name, access_token=None):
     index = child.expect([pexpect.EOF, 'Storage'])
     if index == 1:
         # Microsoft OneDrive:23 , Google Drive:13
-        child.sendline('23')
+        child.sendline(storage)
 
     index = child.expect([pexpect.EOF, 'client_id'])
     if index == 1:
@@ -139,6 +139,37 @@ def one_drive(rclone_dir, drive_name, access_token=None):
     index = child.expect([pexpect.EOF, 'client_secret'])
     if index == 1:
         child.sendline('')
+
+    return child
+
+
+def auto_rclone_config_end(child):
+    """
+    自动配置结束
+    :param child: 应用程序子进程
+    :return:
+    """
+    index = child.expect([pexpect.EOF, 'Yes this is OK'])
+    if index == 1:
+        child.sendline('y')
+
+    index = child.expect([pexpect.EOF, 'Quit config'])
+    if index == 1:
+        # 输入q，退出配置；n新建；d删除；r重命名；c复制；s设置密码
+        child.sendline('q')
+    #     print(subprocess.getoutput(f'./{dir_name}/rclone config show'))
+    time.sleep(5)
+
+
+def one_drive(rclone_dir, drive_name, access_token=None):
+    """
+    One Drive 配置
+    :param rclone_dir:  rclone运行目录
+    :param drive_name:  自定义远程配置名称
+    :param access_token:  授权token，为执行 rclone authorize "onedrive" 获取到的token
+    :return:
+    """
+    child = auto_rclone_config_start(rclone_dir, "23", drive_name)
 
     index = child.expect([pexpect.EOF, 'Edit advanced config'])
     if index == 1:
@@ -182,17 +213,7 @@ def one_drive(rclone_dir, drive_name, access_token=None):
         # 找到类型为“business”的驱动器 "root"，输入y
         child.sendline('y')
 
-    index = child.expect([pexpect.EOF, 'Yes this is OK'])
-    if index == 1:
-        # 确认配置
-        child.sendline('y')
-
-    index = child.expect([pexpect.EOF, 'Quit config'])
-    if index == 1:
-        # 输入q，退出配置；n新建；d删除；r重命名；c复制；s设置密码
-        child.sendline('q')
-    #     print(subprocess.getoutput(f'./{dir_name}/rclone config show'))
-    time.sleep(5)
+    auto_rclone_config_end(child)
 
 
 def google_drive(rclone_dir, drive_name):
@@ -201,39 +222,7 @@ def google_drive(rclone_dir, drive_name):
     :param drive_name: 自定义远程配置名称
     :return:
     """
-    child = pexpect.spawn(f'./{rclone_dir}/rclone config')
-    # print(child)
-    # 如果返回0说明匹配到了异常
-    index = child.expect([pexpect.EOF, 'New remote'])
-    if index == 1:
-        # n新建远程
-        child.sendline('n')
-
-    index = child.expect([pexpect.EOF, 'name'])
-    if index == 1:
-        child.sendline(drive_name)
-
-    try:
-        index = child.expect([pexpect.EOF, 'already exists'])
-        if index == 1:
-            print("该远程配置已经存在：", drive_name)
-            time.sleep(5)
-            return None
-    except:
-        pass
-
-    index = child.expect([pexpect.EOF, 'Storage'])
-    if index == 1:
-        # Microsoft OneDrive:23 , Google Drive:13
-        child.sendline('13')
-
-    index = child.expect([pexpect.EOF, 'client_id'])
-    if index == 1:
-        child.sendline('')
-
-    index = child.expect([pexpect.EOF, 'client_secret'])
-    if index == 1:
-        child.sendline('')
+    child = auto_rclone_config_start(rclone_dir, "13", drive_name)
 
     index = child.expect([pexpect.EOF, 'scope'])
     if index == 1:
@@ -274,16 +263,7 @@ def google_drive(rclone_dir, drive_name):
     if index == 1:
         child.sendline('n')
 
-    index = child.expect([pexpect.EOF, 'Yes this is OK'])
-    if index == 1:
-        child.sendline('y')
-
-    index = child.expect([pexpect.EOF, 'Quit config'])
-    if index == 1:
-        # 输入q，退出配置；n新建；d删除；r重命名；c复制；s设置密码
-        child.sendline('q')
-    #     print(subprocess.getoutput(f'./{dir_name}/rclone config show'))
-    time.sleep(5)
+    auto_rclone_config_end(child)
 
 
 def write_google_drive_config(rclone_dir, name, token=None, drive_type="drive", scope="drive", team_drive=None,
@@ -337,11 +317,11 @@ def write_google_drive_config(rclone_dir, name, token=None, drive_type="drive", 
             conf.write(f)
 
 
-rclone_dir = download_rclone()
-
 """
 以下为执行rclone自动配置
 """
+
+rclone_dir = download_rclone()
 
 one_drive_access_token = """授权"""
 one_drive(rclone_dir, "onedrive", one_drive_access_token)
