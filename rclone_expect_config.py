@@ -354,12 +354,13 @@ write_google_drive_config(rclone_dir, "gdrive_team", google_drive_token, team_dr
 write_google_drive_config(rclone_dir, "gdrive_stared", google_drive_token,
                           root_folder_id="10USshsyfY01grYZzSHMq60lo1H_WVVZH")
 
+# 服务账户授权json示例
 service_account_json = r"""
 {
   "type": "service_account",
   "project_id": "elated-emitter-287202",
   "private_key_id": "4fcf7adfcfb7ee765170156d5dd9807aa5801e65",
-  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQDB0NtpAb6/DImE\n9u9FWOzftzQY3T1OR/pRixGIvtL/VAOQ3ui5O/lXPkQJ5+bB/zrb8YQmhL5Zd0Yp\npUkJ7XFLbQRKWHU3jvW+1DMcRUW/B5uhnuEIyYjBpCH+/wCO6w1rdxAVpudnJF7P\n7mCELH3b8dJ9bEYms7UVHtxuGOud+YnAZolRTYo9tfaFYHg4wJIJmAKPamzf2XkA\nefKUptrRC6sM4FnLnr3w4jGNGlMogOeARY/5MTiImeXFaJ5o67c6KgLjEBumMSuq\n6pvE3S7aWnUEVKYASaz49vBDGuquFCrxZSgS4R5sOxyLOABiPMhKhppTQ+C1zIaz\najEBG9cFAgMBAAECggEAVqDQGPCvPbxQUS6ABsp24Y2EyyJD7xPL5huXJDxKmdYG\n2/9OHNEaIu0RQy40XXyDZeBe1Uqau+lMYnvemAHZlEFvW/2KsuECpR86kwXBZV90\np/oYEjHmHssKaOu4Z6jW8DQg69SUdGz0tdKRsDIktSSylN3KwyyqoPyQwOMBmTMz\nPp71Y+n5ILH8ECMKjmgQJazLZIoCMRarItFqryMkkIfv/rtSd8cgsh7yJIwsBorR\nbKXOVrSobgW700wCmPqU1/X9cwEphHMLJ1/lL7CcvEB0Qaea1P6c0cRNK/waCGml\niJK9QgOjwMcwpbzy1WjtOl7mQ0MOI38WTKd3XNDDZwKBgQDjCoo6lok4h94gfCGr\nPyrn0mKEteSohr8VEZwqnZfMT9Cep4R5hpzZcycEJ23VsZF7PvOTMcvUE6/nelK8\niDGK2N8yYUgkT3mZ8BCTp1QFTocL7uSlOYj0NwTCeVAD8z+fisOcXM4osGejHBUg\nRWx/meFRXEzHetDzb+BM0DgnwwKBgQDaiW1wXUlisIhtYng+SnwMlJBrpZtUXCv+\ndsS8/OTWyzJmiHQl6cwi8OTU4TvMfBaoq9NmsSm35RiuRTbJiMNi4zbVIVKtp9Kp\nHgodlUNz64VhXalUWcta2DsDjWsMBnW0YfCgQ6CtIavu9Dg1MTWNDTrqiJ5I7get\nQdYkkC7hlwKBgAi0scI3XYGmbBUQzXW0kV+cSJzQILl5mUAkkblsm5KBCP3cbI8A\nY2lPKhLVtDd6fJqeOlbNlQRH0PnuTdfe3Q9263ASHOMPjRkjBG+0/drKPRFvEqNn\nRmIe7fbLEg9kt27VslR/loQm54JwpDq9jsCB1Qr6oBMSGYsMIiyv20djAoGAdi/K\nivE4hfH45kdRxkZcDiWucTkv5xCuDkFHJvoR/IQJ7t+vCO4HI4JqDyL8Rxt42aGL\ng8ceS8DPdzghaB7ZpDpDZkJOR3IygJmpWNRnlWJzUPPpZp/lVW0JhWNO2EMKFxK8\nor/QPrGuHV3gpAvH7U+RZFOcXs60QiQP3thHMmMCgYB0QClTCzvF9oqhbIA3K/R4\nteW/NFp+OMx+vExNA9mzI8vfjqgEeTeo1FmvCz8zid0r+3NFY4cSmuZ0Fw1PuPoM\n4i5bAJ+PrqV+qytGZh/M7O0g93jHDA2UspYNR4f2esbO8n+plTMbD7TPQEnZda4J\nMQqwjNFjkAdKIDFuAS8zQA==\n-----END PRIVATE KEY-----\n",
+  "private_key": "-----BEGIN PRIVATE KEY-----\n-----END PRIVATE KEY-----\n",
   "client_email": "rclone@elated-emitter-287202.iam.gserviceaccount.com",
   "client_id": "105227418884970409788",
   "auth_uri": "https://accounts.google.com/o/oauth2/auth",
@@ -369,7 +370,6 @@ service_account_json = r"""
 }
 """
 write_google_drive_config(rclone_dir, "gservicedrive", saf=service_account_json)
-
 
 print(subprocess.getoutput(f'./{rclone_dir}/rclone config show'))
 
@@ -389,6 +389,8 @@ gdrive_stared_copy = f'./{rclone_dir}/rclone copy --drive-server-side-across-con
 gdrive_team_sync = f'./{rclone_dir}/rclone sync --drive-server-side-across-configs gdrive: gdrive_team: {params}'
 # 查看目录大小，可使用--drive-root-folder-id参数指定其他分享链接ID
 gdrive_size = f'./{rclone_dir}/rclone size gdrive_stared: '
+# 通过服务账户授权，指定账户查看网盘大小
+service_gdrive_size = f'./{rclone_dir}/rclone -v --drive-impersonate woytu.com@gmail.com size gservicedrive: '
 
 # 同步
 cmd = f'./{rclone_dir}/rclone sync gdrive:/ onedrive:/ {params}'
@@ -401,4 +403,5 @@ cmd = f'./{rclone_dir}/rclone sync gdrive:/ onedrive:/ {params}'
 # popen_cmd(gdrive_stared_copy)
 # popen_cmd(gdrive_team_sync)
 # popen_cmd(gdrive_size)
+# popen_cmd(service_gdrive_size)
 popen_cmd(cmd)
