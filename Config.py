@@ -20,32 +20,34 @@ def generate_conf():
     """
     conf = os.path.join(os.getcwd(), "app.conf")
     if not os.path.exists(conf):
-        content = "# 全局配置\n"
-        content += "[APP]\n"
-        content += "# 数据存放目录\n"
-        content += "DATA_DIR = \n"
-        content += "# 使用哪种数据库：MySQL或者Sqlite3\n"
-        content += "DATABASE = \n"
-        content += "# MySQL配置\n"
-        content += "[MYSQL]\n"
-        content += "# 地址\n"
-        content += "HOST = \n"
-        content += "# 端口\n"
-        content += "PORT = \n"
-        content += "# 用户名\n"
-        content += "USER = \n"
-        content += "# 密码\n"
-        content += "PASSWORD = \n"
-        content += "# 数据库名称\n"
-        content += "BD_NAME = \n"
-        content += "# 字符编码\n"
-        content += "CHARSET = \n"
-        content += "# Sqlite3配置\n"
-        content += "[SQLITE3]\n"
-        content += "# 数据库名称\n"
-        content += "BD_NAME = \n"
-        content += "# 字符编码\n"
-        content += "CHARSET = \n"
+        content = """\
+        # 全局配置
+        [APP]
+        # 数据存放目录
+        DATA_DIR = 
+        # 使用哪种数据库：MySQL或者Sqlite3
+        DATABASE = 
+        # MySQL配置
+        [MYSQL]
+        # 地址
+        HOST = 
+        # 端口
+        PORT = 
+        # 用户名
+        USER = 
+        # 密码
+        PASSWORD = 
+        # 数据库名称
+        BD_NAME = 
+        # 字符编码
+        CHARSET = 
+        # Sqlite3配置
+        [SQLITE3]
+        # 数据库名称
+        BD_NAME = 
+        # 字符编码
+        CHARSET = 
+        """
         FileUtil.writ_file(conf, content)
 
 

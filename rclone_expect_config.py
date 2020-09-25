@@ -219,6 +219,7 @@ def one_drive(rclone_dir, drive_name, access_token=None):
 def google_drive(rclone_dir, drive_name):
     """
     Google Drive 远程配置
+    :param rclone_dir: rclone运行目录
     :param drive_name: 自定义远程配置名称
     :return:
     """
