@@ -10,6 +10,7 @@
 # @Project: reptile-python
 # @Package: 
 # @Software: PyCharm
+import random
 import re
 
 import requests
@@ -98,17 +99,23 @@ def get_haoweichi(url):
 
 
 def get_fakenamegenerator(url, params):
+    """
+    根据url和参数生成相应信息并返回
+    :param url:
+    :param params:
+    :return:
+    """
     result = BeautifulSoup(requests.get(url, params, headers=headers, timeout=600).text, features="lxml")
     parent = result.select("#details > div.content > div.info > div")[0]
 
     # 替换<br/>为-
-    _address = parent.select("div.address > div")[0].get_text("-", strip=True).split(",")
+    _address = parent.select("div.address > .adr")[0].get_text("-", strip=True).split(",")
     address = _address[0].split("-")
     data = {
         "full_name": parent.select("div.address > h3")[0].text,
         "address": address[0],
         "city": address[1],
-        "zip_code": _address[1],
+        "zip_code": _address[1].strip(),
     }
     extras = parent.find_all("dl")
     for extra in extras:
@@ -121,23 +128,35 @@ def get_fakenamegenerator(url, params):
         name = re.sub(r"\s", "_", name, 0, re.I).lower()
         if name == "email_address":
             email = re.sub(r"\s.*$", "", dd.text, 0, re.I)
-            href = dd.find("a").attrs["href"]
-            content = f"{email} {href}"
+            content = f"""{email},{dd.find("a").attrs["href"]}"""
         if name == "phone":
             if content.find('-') == -1:
-                data["area_code"] = ""
+                # 区号
+                data["area_code"] = "001"
             else:
                 data["area_code"] = content[:content.find('-')]
             content = content[content.find('-') + 1:]
         if name == "qr_code":
             continue
+        if name == "birthday":
+            birthday = content.split(",")
+            # 高中毕业时间
+            data["high_school_graduation"] = int(birthday[1]) + 17
+        if name == 'ssn' and "online" in content:
+            ssn = content.split(' ')[0].replace("XXXX", "".join(random.choices("0123456789", k=4)))
+            content = f"""{ssn},{dd.find("a").attrs["href"]}"""
         # 去掉开头或者结尾空白字符
-        data[name] = re.sub(r"^\s+|\s+$", "", content, 0, re.I)
+        data[name] = content.strip()
 
     return data
 
 
 def get_fakenamegenerator_index(params=None):
+    """
+    生成单个
+    :param params:
+    :return:
+    """
     if params is None:
         params = {
             # 姓名命名的国家
@@ -151,6 +170,11 @@ def get_fakenamegenerator_index(params=None):
 
 
 def get_fakenamegenerator_advanced(params=None):
+    """
+    高级生成，可指定年龄阶段
+    :param params:
+    :return:
+    """
     if params is None:
         params = {
             "t": "country",
@@ -159,13 +183,12 @@ def get_fakenamegenerator_advanced(params=None):
             # 数组多选，最多5个
             "c[]": "us",
             "gen": "78",
-            "age-min": "19",
-            "age-max": "32",
+            "age-min": "18",
+            "age-max": "25",
         }
     return get_fakenamegenerator("https://www.fakenamegenerator.com/advanced.php", params)
 
 
 if __name__ == '__main__':
-    print(get_fakenamegenerator_index())
-
-    # print(get_fakenamegenerator_advanced())
+    # print(get_fakenamegenerator_index())
+    print(get_fakenamegenerator_advanced())
