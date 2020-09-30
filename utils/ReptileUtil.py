@@ -237,17 +237,32 @@ def _quit(driver):
 
 
 class SafeDriver:
+    """
+    包装交给上下文管理
+    """
+
     def __init__(self, url, debug=False):
         self.driver = selenium_driver(url, debug)
 
     def __enter__(self):
-        return self
+        return self.driver
 
     def __exit__(self, exc_type, exc_val, exc_tb):
+        """
+        使用with的时候触发
+        :param exc_type:
+        :param exc_val:
+        :param exc_tb:
+        :return:
+        """
         if self.driver:
             _quit(self.driver)
 
     def __del__(self):
+        """
+        不使用with的时候触发
+        :return:
+        """
         if self.driver:
             _quit(self.driver)
 
@@ -255,10 +270,10 @@ class SafeDriver:
 if __name__ == '__main__':
     # download_taobao_chromedriver()
     # download_chromedriver()
-    safe_driver = SafeDriver("")
+    safe_driver = SafeDriver("") # 触发__del__
     # 仅仅从功能上来说，instance 变量与safe_driver变量完全一样
     # 所不同的是，使用with启用上下文管理器以后，在退出缩进的时候会执行__exit__中的内容。
-    with SafeDriver("") as instance:
+    with SafeDriver("") as instance: # 触发__exit__
         pass
     with safe_driver.driver as driver:
         pass
