@@ -247,7 +247,9 @@ def _quit(driver):
     if os.path.exists(user_data):
         path = os.path.split(user_data)
         # 删除临时文件目录
-        os.remove(path[0])
+        import shutil
+        shutil.rmtree(path[0])
+        # os.rmdir(path[0])
 
 
 class SafeDriver:
