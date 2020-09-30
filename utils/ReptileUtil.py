@@ -225,15 +225,8 @@ def _quit(driver):
     :return:
     """
     driver.quit()
-    # os.system('taskkill /im chromedriver.exe /F')
-    # Service.stop()
-    # try:
-    #     import signal
-    #     pid = driver.service.process.pid
-    #     os.kill(int(pid), signal.SIGTERM)
-    #     print("Killed chrome using process")
-    # except ProcessLookupError as ex:
-    #     pass
+    driver.service.stop()
+    os.system('taskkill /im chromedriver.exe /F')
 
 
 class SafeDriver:
