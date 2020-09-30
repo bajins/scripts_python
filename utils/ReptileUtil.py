@@ -151,7 +151,8 @@ def selenium_driver(url, headless=True, incognito=True):
             'notifications': 2,
             # 禁用自动下载
             "automatic_downloads": 0
-        }
+        },
+        # "debuggerAddress": "127.0.0.1:9222"
     }
     if headless:
         # 设置chrome浏览器无界面模式
