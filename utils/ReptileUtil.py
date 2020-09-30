@@ -108,10 +108,11 @@ def download_taobao_chromedriver():
             FileUtil.zip_extract(s, None)
 
 
-def selenium_driver(url, debug=False):
+def selenium_driver(url, headless=True, incognito=True):
     """
     获取驱动
-    :param debug: 是否调试模式
+    :param headless: 是否无界面模式
+    :param incognito: 是否隐身模式
     :param url:
     :return:
     """
@@ -132,12 +133,6 @@ def selenium_driver(url, debug=False):
     options.add_argument("-start-maximized")
     # 关闭"chrome正受到自动测试软件的控制"提示和控制台打印DevTools listening
     options.add_experimental_option("excludeSwitches", ['enable-automation', 'enable-logging'])
-    # 禁止加载所有插件，可以增加速度
-    options.add_argument('–disable-plugins')
-    # 禁用扩展
-    options.add_argument('-disable-extensions')
-    # 禁用浏览器应用
-    options.add_argument('-disable-software-rasterizer')
     # 忽略证书错误
     options.add_argument('-ignore-certificate-errors')
     prefs = {
@@ -158,17 +153,25 @@ def selenium_driver(url, debug=False):
             "automatic_downloads": 0
         }
     }
-    if not debug:
+    if not headless:
         # 设置chrome浏览器无界面模式
         options.add_argument('-headless')
         # 谷歌文档提到需要加上这个属性来规避bug
         options.add_argument('-disable-gpu')
-        # 隐身模式启动
-        options.add_argument('-–incognito')
         # 取消沙盒模式
         options.add_argument('-no-sandbox')
         # 指定浏览器分辨率
         options.add_argument('-window-size=1600x900')
+
+    if incognito:
+        # 隐身模式启动
+        options.add_argument('-–incognito')
+        # 禁止加载所有插件，可以增加速度
+        options.add_argument('–disable-plugins')
+        # 禁用扩展
+        options.add_argument('-disable-extensions')
+        # 禁用浏览器应用
+        options.add_argument('-disable-software-rasterizer')
 
     options.add_experimental_option('prefs', prefs)
     # capa = DesiredCapabilities.CHROME
@@ -234,8 +237,8 @@ class SafeDriver:
     包装交给上下文管理
     """
 
-    def __init__(self, url, debug=False):
-        self.driver = selenium_driver(url, debug)
+    def __init__(self, url, headless=True, incognito=True):
+        self.driver = selenium_driver(url, headless, incognito)
 
     def __enter__(self):
         return self
