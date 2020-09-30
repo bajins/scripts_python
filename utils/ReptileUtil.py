@@ -218,6 +218,24 @@ def is_element_present(driver, by, value):
         return True
 
 
+def _quit(driver):
+    """
+    结束进程
+    :param driver:
+    :return:
+    """
+    driver.quit()
+    # os.system('taskkill /im chromedriver.exe /F')
+    # Service.stop()
+    # try:
+    #     import signal
+    #     pid = driver.service.process.pid
+    #     os.kill(int(pid), signal.SIGTERM)
+    #     print("Killed chrome using process")
+    # except ProcessLookupError as ex:
+    #     pass
+
+
 class SafeDriver:
     def __init__(self, url, debug=False):
         self.driver = selenium_driver(url, debug)
@@ -227,22 +245,11 @@ class SafeDriver:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         if self.driver:
-            # os.system('taskkill /im chromedriver.exe /F')
-            self.driver.quit()
-            Service.stop()
+            _quit(self.driver)
 
     def __del__(self):
         if self.driver:
-            # os.system('taskkill /im chromedriver.exe /F')
-            self.driver.quit()
-            Service.stop()
-            try:
-                import signal
-                pid = driver.service.process.pid
-                os.kill(int(pid), signal.SIGTERM)
-                print("Killed chrome using process")
-            except ProcessLookupError as ex:
-                pass
+            _quit(self.driver)
 
 
 if __name__ == '__main__':
