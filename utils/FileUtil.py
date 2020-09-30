@@ -14,6 +14,8 @@ import time
 import zipfile
 
 # Pillow
+from shutil import copy
+
 from PIL import Image
 
 from . import StringUtil
@@ -149,7 +151,7 @@ def read_file_remove_line_feed(file_path):
 
 def write_temp(file_path, lines):
     """
-    创建临时文件
+    创建临时文件 import tempfile
     :param file_path:文件全路径
     :param lines:内容
     :return:
@@ -304,3 +306,24 @@ def size_unit_format(size, is_speed=False, precision=2):
         if size < unit:
             return f'{round(size, precision)}{i}'
     return f'{round(size, precision)}{i}'
+
+
+def copy_dir(dir, newdir):
+    """
+    复制目录到指定位置
+    import shutil
+    shutil.copytree(user_data, mkdtemp, True)
+    import distutils.dir_util
+    distutils.dir_util.copy_tree(user_data, mkdtemp)
+    :param dir: 需拷贝的文件夹
+    :param newdir: 是拷贝的地方
+    :return:
+    """
+    for p in os.listdir(dir):
+        filepath = os.path.join(newdir, p)
+        old_path = os.path.join(dir, p)
+        if os.path.isdir(old_path):
+            os.mkdir(filepath)
+            copy_dir(old_path, filepath)
+        if os.path.isfile(old_path):
+            copy(old_path, filepath)

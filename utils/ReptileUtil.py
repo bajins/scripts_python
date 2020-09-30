@@ -172,7 +172,21 @@ def selenium_driver(url, headless=True, incognito=True):
         options.add_argument('-disable-extensions')
         # 禁用浏览器应用
         options.add_argument('-disable-software-rasterizer')
-
+    else:
+        import tempfile
+        user_data = os.path.expanduser('~') + r"\AppData\Local\Google\Chrome\User Data"
+        # import getpass
+        # user_data = r"--user-data-dir=C:\Users\{}\AppData\Local\Google\Chrome\User Data".format(getpass.getuser())
+        # user_data = r"--user-data-dir=C:\Users\%s\AppData\Local\Google\Chrome\User Data" % os.environ["USERPROFILE"]
+        mkdtemp = tempfile.mkdtemp() + "\\User Data"
+        try:
+            # import distutils.dir_util
+            # distutils.dir_util.copy_tree(user_data, mkdtemp)
+            import shutil
+            shutil.copytree(user_data, mkdtemp, ignore_dangling_symlinks=True)
+        except:
+            pass
+        options.add_argument("--user-data-dir=" + mkdtemp)
     options.add_experimental_option('prefs', prefs)
     # capa = DesiredCapabilities.CHROME
     capa = options.to_capabilities()
@@ -180,8 +194,7 @@ def selenium_driver(url, headless=True, incognito=True):
     # capa["pageLoadStrategy"] = "none"
 
     # 打开浏览器,executable_path指定驱动位置
-    # driver = webdriver.Chrome(chrome_options=options, executable_path=path, desired_capabilities=capa)
-    driver = webdriver.Chrome(executable_path=path, desired_capabilities=capa)
+    driver = webdriver.Chrome(executable_path=path, options=options, desired_capabilities=capa)
     # 下载设置
     driver.execute_cdp_cmd("Page.setDownloadBehavior", {'behavior': 'deny', 'downloadPath': "D:\\"})
 
@@ -230,6 +243,11 @@ def _quit(driver):
     driver.quit()
     driver.service.stop()
     os.system('taskkill /im chromedriver.exe /F')
+    user_data = driver.desired_capabilities["chrome"]["userDataDir"]
+    if os.path.exists(user_data):
+        path = os.path.split(user_data)
+        # 删除临时文件目录
+        os.remove(path[0])
 
 
 class SafeDriver:
