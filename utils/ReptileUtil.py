@@ -22,6 +22,7 @@ from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver import DesiredCapabilities
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.service import Service
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.expected_conditions import presence_of_element_located
@@ -141,7 +142,7 @@ def selenium_driver(url, debug=False):
     options.add_argument('-ignore-certificate-errors')
     prefs = {
         # 不加载图片
-        "profile.managed_default_content_settings.images": 2,
+        # "profile.managed_default_content_settings.images": 2,
         'profile.default_content_settings.popups': 0,
         # 默认下载地址
         'download.default_directory': 'D:\\',
@@ -217,6 +218,40 @@ def is_element_present(driver, by, value):
         return True
 
 
+class SafeDriver:
+    def __init__(self, url, debug=False):
+        self.driver = selenium_driver(url, debug)
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if self.driver:
+            # os.system('taskkill /im chromedriver.exe /F')
+            self.driver.quit()
+            Service.stop()
+
+    def __del__(self):
+        if self.driver:
+            # os.system('taskkill /im chromedriver.exe /F')
+            self.driver.quit()
+            Service.stop()
+            try:
+                import signal
+                pid = driver.service.process.pid
+                os.kill(int(pid), signal.SIGTERM)
+                print("Killed chrome using process")
+            except ProcessLookupError as ex:
+                pass
+
+
 if __name__ == '__main__':
     # download_taobao_chromedriver()
-    download_chromedriver()
+    # download_chromedriver()
+    safe_driver = SafeDriver("")
+    # 仅仅从功能上来说，instance 变量与safe_driver变量完全一样
+    # 所不同的是，使用with启用上下文管理器以后，在退出缩进的时候会执行__exit__中的内容。
+    with SafeDriver("") as instance:
+        pass
+    with safe_driver.driver as driver:
+        pass

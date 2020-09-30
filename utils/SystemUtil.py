@@ -65,21 +65,20 @@ def get_windows_software():
         r'SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall',
         r'SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall',
     ]
-
     software_list = {}
 
     # 连接注册表根键
     regRoot = winreg.ConnectRegistry(None, winreg.HKEY_LOCAL_MACHINE)
     for sub_key in sub_keys:
-        keyHandle = winreg.OpenKey(regRoot, sub_key, 0, winreg.KEY_ALL_ACCESS)
+        # winreg.KEY_ALL_ACCESS,winreg.KEY_READ,winreg.KEY_WRITE
+        keyHandle = winreg.OpenKey(regRoot, sub_key, 0, winreg.KEY_READ)
         # 获取该目录下所有键的个数(0-下属键个数;1-当前键值个数)
         for i in range(winreg.QueryInfoKey(keyHandle)[0]):
             try:
                 # 穷举每个键，获取键名
                 key_name = winreg.EnumKey(keyHandle, i)
-                key_path = f"{sub_key}\\{key_name}"
                 # 根据获取的键名拼接之前的路径作为参数，获取当前键下所属键的控制
-                each_key = winreg.OpenKey(regRoot, key_path, 0, winreg.KEY_ALL_ACCESS)
+                each_key = winreg.OpenKey(regRoot, f"{sub_key}\\{key_name}", 0, winreg.KEY_READ)
                 if winreg.QueryInfoKey(each_key)[1] > 1:
                     # 穷举每个键，获取键名、键值以及数据类型
                     # name, value, type = winreg.EnumValue(each_key, j)
@@ -89,12 +88,10 @@ def get_windows_software():
                     software_list[DisplayName] = DisplayVersion
             except WindowsError as e:
                 pass
-            finally:
-                winreg.CloseKey(each_key)
-
+            # finally:
+            #     winreg.CloseKey(each_key)
     winreg.CloseKey(keyHandle)
     winreg.CloseKey(regRoot)
-
     return software_list
 
 
