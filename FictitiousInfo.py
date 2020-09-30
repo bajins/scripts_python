@@ -2,7 +2,7 @@
 # -*- encoding: utf-8 -*-
 #
 # @Description: 获取虚拟信息
-# @PreInstall: 
+# @PreInstall: BeautifulSoup,lxml,requests
 # @Author : https://www.bajins.com
 # @File : FictitiousInfo.py
 # @Version: 1.0.0
@@ -111,8 +111,14 @@ def get_fakenamegenerator(url, params):
     # 替换<br/>为-
     _address = parent.select("div.address > .adr")[0].get_text("-", strip=True).split(",")
     address = _address[0].split("-")
+    full_name = parent.select("div.address > h3")[0].text
+    _full_name = full_name.split(" ")
+    firstname = _full_name[0]
+    lastname = _full_name[2]
     data = {
-        "full_name": parent.select("div.address > h3")[0].text,
+        "full_name": full_name,
+        "first_name": firstname,
+        "last_name": lastname,
         "address": address[0],
         "city": address[1],
         "zip_code": _address[1].strip(),
@@ -122,8 +128,8 @@ def get_fakenamegenerator(url, params):
         dt = extra.find("dt")
         dd = extra.find("dd")
         content = dd.text
-        # 替换除字母数字空格以外的内容
-        name = re.sub(r"[^a-z\d\s]", "", dt.text, 0, re.I)
+        # 替换除中文字母数字空格以外的内容
+        name = re.sub(r"[^\u4E00-\u9FA5A-Za-z\d\s]", "", dt.text, 0, re.I)
         # 替换空格并转小写
         name = re.sub(r"\s", "_", name, 0, re.I).lower()
         if name == "email_address":

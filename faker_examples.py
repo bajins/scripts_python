@@ -9,9 +9,12 @@
 # @Software: PyCharm
 import sys
 # https://faker.readthedocs.io/en/master/locales/en_CA.html
-from faker import Faker
+from faker import Faker, Factory
 
+# 生成的地址假数据相互之间无逻辑关系
+# https://codertang.com/2020/09/05/python-faker
 fake = Faker('en_CA')
+# fake = Factory.create(locale='en_CA')
 
 print("\033[0;31m[%s@%s]\033[0m" % (__file__, sys._getframe().f_lineno), "providers".center(100, "="))
 

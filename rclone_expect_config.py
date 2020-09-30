@@ -122,7 +122,7 @@ def auto_rclone_config_start(rclone_dir, storage, drive_name):
         index = child.expect([pexpect.EOF, 'already exists'])
         if index == 1:
             print("该远程配置已经存在：", drive_name)
-            time.sleep(5)
+            time.sleep(2)
             return None
     except:
         pass
@@ -170,6 +170,8 @@ def one_drive(rclone_dir, drive_name, access_token=None):
     :return:
     """
     child = auto_rclone_config_start(rclone_dir, "23", drive_name)
+    if child is None:
+        return
 
     index = child.expect([pexpect.EOF, 'Edit advanced config'])
     if index == 1:
@@ -224,6 +226,8 @@ def google_drive(rclone_dir, drive_name):
     :return:
     """
     child = auto_rclone_config_start(rclone_dir, "13", drive_name)
+    if child is None:
+        return
 
     index = child.expect([pexpect.EOF, 'scope'])
     if index == 1:
