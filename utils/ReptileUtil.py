@@ -153,7 +153,7 @@ def selenium_driver(url, headless=True, incognito=True):
             "automatic_downloads": 0
         }
     }
-    if not headless:
+    if headless:
         # 设置chrome浏览器无界面模式
         options.add_argument('-headless')
         # 谷歌文档提到需要加上这个属性来规避bug
