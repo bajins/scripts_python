@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8 -*-
-# @Author : bajins www.bajins.com
+# @Author : bajins https://www.bajins.com
 # @File : Config.py
 # @Version: 1.0.0
 # @Time : 2019/8/27 10:28

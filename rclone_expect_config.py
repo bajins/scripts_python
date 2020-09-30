@@ -4,7 +4,7 @@
 # @File : rclone_expect_config.py
 # @Version: 1.1.0
 # @Time : 2020/7/26 11:00
-# @Project: tool-gui-python
+# @Project: scripts_python
 # @Package:
 # @Software: PyCharm
 

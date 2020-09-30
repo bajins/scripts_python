@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8 -*-
-# @Author : bajins www.bajins.com
+# @Author : bajins https://www.bajins.com
 # @File : StringUtil.py
 # @Version: 1.0.0
 # @Time : 2019/8/22 9:10
@@ -23,7 +23,6 @@ def is_empty(obj):
     if isinstance(obj, str):
         if obj is None or len(obj) <= 0 or obj.strip() == '':
             return True
-
     elif isinstance(obj, set) or isinstance(obj, dict) or isinstance(obj, list):
         if obj is None or len(obj) <= 0 or bool(obj) or not any(obj):
             return True
@@ -129,8 +128,3 @@ def random_string(length=16):
     """
     str_list = [random.choice(string.digits + string.ascii_letters) for i in range(length)]
     return ''.join(str_list)
-
-
-if __name__ == '__main__':
-    print(random.randint(1, 10))
-    print(random.randint(2000, 2017))

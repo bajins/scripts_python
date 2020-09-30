@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8 -*-
-# @Author : bajins www.bajins.com
+# @Author : bajins https://www.bajins.com
 # @File : Mail.py
 # @Version: 1.0.0
 # @Time : 2019/9/12 15:20
-# @Project: tool-gui-python
+# @Project: scripts_python
 # @Package: 
 # @Software: PyCharm
 import json

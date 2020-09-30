@@ -4,7 +4,7 @@
 # @File : faker_examples.py
 # @Version: 1.1.0
 # @Time : 2020/8/14 15:30
-# @Project: tool-gui-python
+# @Project: scripts_python
 # @Package:
 # @Software: PyCharm
 import sys

@@ -6,7 +6,7 @@
 # @File : TimeUtil.py
 # @Version: 1.0.0
 # @Time : 2019/9/25 18:49
-# @Project: tool-gui-python
+# @Project: scripts_python
 # @Package: 
 # @Software: PyCharm
 import datetime

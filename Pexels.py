@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8 -*-
-# @Author : bajins www.bajins.com
+# @Author : bajins https://www.bajins.com
 # @File : Pexels.py
 # @Version: 1.0.0
 # @Time : 2019/10/16 15:22
-# @Project: tool-gui-python
+# @Project: scripts_python
 # @Package: 
 # @Software: PyCharm
 import asyncio

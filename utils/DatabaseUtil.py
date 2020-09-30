@@ -4,7 +4,7 @@
 # @File : DatabaseUtil.py
 # @Version: 1.0.0
 # @Time : 2019/8/16 13:02
-# @Project: reptile-python
+# @Project: scripts_python
 # @Package: 
 # @Software: PyCharm
 import os
@@ -384,8 +384,3 @@ class Sqlite3:
 
     def excel_to_db_com(self, excel_name, table_name, sheet_index=0, sheet_start_index=1, password=None):
         excel_to_db_com(self.conn, self.cursor, excel_name, table_name, sheet_index, sheet_start_index, password)
-
-
-if __name__ == '__main__':
-    s3 = Sqlite3("test")
-    s3.excel_to_db_com(r"./test.xlsx", "test", password="test")

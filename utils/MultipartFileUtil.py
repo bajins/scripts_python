@@ -6,7 +6,7 @@
 # @File : MultipartFileUtil.py
 # @Version: 1.0.0
 # @Time : 2019/10/18 23:23
-# @Project: tool-gui-python
+# @Project: scripts_python
 # @Package: 
 # @Software: PyCharm
 
@@ -237,15 +237,3 @@ class FileInfoManager:
         self.writing_range = self._splice(self.writing_range, content_range)
         self.written_range = _concat(self.written_range, content_range)
         self._save_to_file()
-
-
-# t = DownloadWorkerThread(r'http://a3.kuaihou.com/ruanjian/ucdnb.zip', 'd:\\ucdnb.zip', header)
-# t.start()
-
-if __name__ == '__main__':
-    url = input(u"The URL Waiting for downloading:")
-    filename = input(u"The Filepath to save:")
-    t = download(url, filename)
-    while t.is_alive():
-        time.sleep(60)
-    print("bye")

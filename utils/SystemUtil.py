@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8 -*-
-# @Author : bajins www.bajins.com
+# @Author : bajins https://www.bajins.com
 # @File : SystemUtil.py
 # @Version: 1.0.0
 # @Time : 2019/8/22 9:18
@@ -153,8 +153,3 @@ def restart_process(path):
             os.system(f"taskkill /pid {os.getpid()} /f && {py} {path}")
         elif sysstr == "Linux":
             os.system(f"kill -9 {os.getpid()} && {py} {path}")
-
-
-if __name__ == '__main__':
-    # print(get_windows_software())
-    restart_process(os.path.abspath(__file__))

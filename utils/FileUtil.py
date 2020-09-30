@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8 -*-
-# @Author : bajins www.bajins.com
+# @Author : bajins https://www.bajins.com
 # @File : FileUtil.py
 # @Version: 1.0.0
 # @Time : 2019/8/21 15:32
@@ -304,9 +304,3 @@ def size_unit_format(size, is_speed=False, precision=2):
         if size < unit:
             return f'{round(size, precision)}{i}'
     return f'{round(size, precision)}{i}'
-
-
-if __name__ == '__main__':
-    print(count_dir_size("images"))
-
-    print(size_unit_format(25635891))
