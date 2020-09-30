@@ -28,7 +28,7 @@ from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.expected_conditions import presence_of_element_located
 from selenium.webdriver.support.wait import WebDriverWait
 
-from utils import HttpUtil, FileUtil, SystemUtil
+from . import HttpUtil, FileUtil, SystemUtil
 
 
 def get_local_version(prefix):

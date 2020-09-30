@@ -15,7 +15,7 @@ import threading
 import os
 import time
 
-from utils import HttpUtil
+from . import HttpUtil
 
 
 def download(url, file_name, headers=HttpUtil.header):

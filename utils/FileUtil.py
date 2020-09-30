@@ -16,7 +16,7 @@ import zipfile
 # Pillow
 from PIL import Image
 
-from utils import StringUtil
+from . import StringUtil
 
 
 def path_join(*path):
