@@ -4,7 +4,7 @@
 # @Description: 获取虚拟信息
 # @PreInstall: BeautifulSoup,lxml,requests
 # @Author : https://www.bajins.com
-# @File : FictitiousInfo.py
+# @File : FakeWebsite.py
 # @Version: 1.0.0
 # @Time : 2019/12/26/026 12:10
 # @Project: reptile-python
@@ -21,7 +21,7 @@ headers = {
                   "Chrome/72.0.3626.109 Safari/537.36 "
 }
 
-haoweichi_url = {
+hao_wei_chi_url = {
     # 美国
     "usa": "http://www.haoweichi.com",
     # 加拿大
@@ -35,7 +35,7 @@ haoweichi_url = {
 }
 
 
-def get_haoweichi(url):
+def get_hao_wei_chi(url):
     result = BeautifulSoup(requests.get(url, timeout=600).text, headers=headers, features="lxml")
     parent = result.select("body > div.container.index > div.row.main-left > "
                            "div.col-md-9.col-sm-9.col-xs-12.no-margin.no-padding > div > div.row.no-margin")
@@ -98,7 +98,7 @@ def get_haoweichi(url):
     return data
 
 
-def get_fakenamegenerator(url, params):
+def get_fake_name_generator(url, params):
     """
     根据url和参数生成相应信息并返回
     :param url:
@@ -157,7 +157,7 @@ def get_fakenamegenerator(url, params):
     return data
 
 
-def get_fakenamegenerator_index(params=None):
+def get_fake_name_generator_index(params=None):
     """
     生成单个
     :param params:
@@ -172,10 +172,10 @@ def get_fakenamegenerator_index(params=None):
             # 性别：random、male、female
             "gen": "random",
         }
-    return get_fakenamegenerator("https://www.fakenamegenerator.com/index.php", params)
+    return get_fake_name_generator("https://www.fakenamegenerator.com/index.php", params)
 
 
-def get_fakenamegenerator_advanced(params=None):
+def get_fake_name_generator_advanced(params=None):
     """
     高级生成，可指定年龄阶段
     :param params:
@@ -192,9 +192,9 @@ def get_fakenamegenerator_advanced(params=None):
             "age-min": "18",
             "age-max": "25",
         }
-    return get_fakenamegenerator("https://www.fakenamegenerator.com/advanced.php", params)
+    return get_fake_name_generator("https://www.fakenamegenerator.com/advanced.php", params)
 
 
 if __name__ == '__main__':
-    # print(get_fakenamegenerator_index())
-    print(get_fakenamegenerator_advanced())
+    # print(get_fake_name_generator_index())
+    print(get_fake_name_generator_advanced())
