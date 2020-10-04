@@ -22,9 +22,8 @@ from glob import iglob
 
 from natsort import natsorted
 from concurrent.futures import ThreadPoolExecutor
+# pip3 uninstall Crypto 并删除Lib/site-packages/crypto
 # pip3 install pycryptodome
-# 进入python安装目录，如C:\python37，在\Lib\site-packages目录下找到：
-# crypto这个目录重命名为: Crypto
 from Crypto.Cipher import AES
 
 UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.117 " \
