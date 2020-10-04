@@ -2,9 +2,9 @@
 # -*- encoding: utf-8 -*-
 #
 # @Description: 根据m3u8描述文件下载文件
-# @PreInstall: 
+# @PreInstall: pycryptodome
 # @Author : https://www.bajins.com
-# @File : m3u8.py
+# @File : m3u8Parse.py
 # @Version: 1.0.0
 # @Time : 2020/1/11 22:09
 # @Project: reptile-python
@@ -13,6 +13,7 @@
 
 import os
 import time
+from dataclasses import dataclass
 from urllib.parse import urljoin
 
 import m3u8
@@ -20,11 +21,9 @@ import requests
 from glob import iglob
 
 from natsort import natsorted
-from dataclasses import dataclass
 from concurrent.futures import ThreadPoolExecutor
 # pip3 install pycryptodome
-# 进入python安装目录，如C:\python37
-# 在\Lib\site-packages目录下找到：
+# 进入python安装目录，如C:\python37，在\Lib\site-packages目录下找到：
 # crypto这个目录重命名为: Crypto
 from Crypto.Cipher import AES
 
@@ -32,6 +31,7 @@ UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML
             "Safari/537.36"
 
 
+# https://docs.python.org/zh-cn/3/library/dataclasses.html
 @dataclass
 class DownLoadM3U8(object):
     m3u8_url: str
