@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8 -*-
+#
+# @Description:
+# @PreInstall: Pillow
 # @Author : bajins https://www.bajins.com
 # @File : FileUtil.py
 # @Version: 1.0.0
@@ -13,9 +16,9 @@ import stat
 import time
 import zipfile
 
-# Pillow
 from shutil import copy
 
+# pip install Pillow
 from PIL import Image
 
 from . import StringUtil
