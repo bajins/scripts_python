@@ -16,6 +16,11 @@ import re
 import requests
 from bs4 import BeautifulSoup
 
+from urllib3.exceptions import InsecureRequestWarning
+
+# 移除不验证SSL的警告
+requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+
 headers = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
                   "Chrome/72.0.3626.109 Safari/537.36 "
@@ -196,5 +201,5 @@ def get_fake_name_generator_advanced(params=None):
 
 
 if __name__ == '__main__':
-    # print(get_fake_name_generator_index())
+    print(get_fake_name_generator_index())
     print(get_fake_name_generator_advanced())
