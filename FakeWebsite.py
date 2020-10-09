@@ -36,7 +36,7 @@ hao_wei_chi_url = {
 
 
 def get_hao_wei_chi(url):
-    result = BeautifulSoup(requests.get(url, timeout=600).text, headers=headers, features="lxml")
+    result = BeautifulSoup(requests.get(url, timeout=600, verfy=False).text, headers=headers, features="lxml")
     parent = result.select("body > div.container.index > div.row.main-left > "
                            "div.col-md-9.col-sm-9.col-xs-12.no-margin.no-padding > div > div.row.no-margin")
 
@@ -105,7 +105,7 @@ def get_fake_name_generator(url, params):
     :param params:
     :return:
     """
-    result = BeautifulSoup(requests.get(url, params, headers=headers, timeout=600).text, features="lxml")
+    result = BeautifulSoup(requests.get(url, params, headers=headers, timeout=600, verfy=False).text, features="lxml")
     parent = result.select("#details > div.content > div.info > div")[0]
 
     # 替换<br/>为-
