@@ -158,7 +158,7 @@ def auto_rclone_config_end(child):
         # 输入q，退出配置；n新建；d删除；r重命名；c复制；s设置密码
         child.sendline('q')
     #     print(subprocess.getoutput(f'./{dir_name}/rclone config show'))
-    time.sleep(5)
+    time.sleep(2)
 
 
 def one_drive(rclone_dir, drive_name, access_token=None):
