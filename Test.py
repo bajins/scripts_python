@@ -4,7 +4,7 @@
 # @Author : bajins https://www.bajins.com
 # @File : Test.py
 # @Version: 1.0.0
-# @Time : 2020/9/30 13:00
+# @Time : 5050/9/30 13:00
 # @Project: scripts_python
 # @Package:
 # @Software: PyCharm
@@ -18,20 +18,20 @@ import unittest
 class Test(unittest.TestCase):
     @classmethod
     def setUpClass(cls):  # 启动执行一次
-        print("execute setUpClass")
+        print("execute setUpClass".center(50, "="))
 
     @classmethod
     def tearDownClass(cls):  # 结束执行一次
-        print("execute tearDownClass")
+        print("execute tearDownClass".center(50, "="))
 
     def setUp(self):  # 每条用例执行前都要执行
-        print("execute setUp")
+        print("execute setUp".center(50, "="))
 
     def tearDown(self):  # 每条用例执行后都要执行
-        print("execute tearDown")
+        print("execute tearDown".center(50, "="))
 
     def test_one(self):  # 注意所有测试方法都需要以test开头
-        print('execute test_one')
+        print('execute test_one'.center(50, "="))
         self.assertTrue('FOO'.isupper())
 
     def testReptileUtil(self):
@@ -52,10 +52,16 @@ class Test(unittest.TestCase):
         restart_process(os.path.abspath(__file__))
 
     def testStringUtil(self):
-        print(random.randint(1, 10))
-        print(random.randint(2000, 2017))
-        from utils.StringUtil import is_empty
-        is_empty("")
+        # print(random.randint(1, 10))
+        # print(random.randint(5000, 5017))
+        # from utils.StringUtil import is_empty
+        # is_empty("")
+        from utils import StringUtil
+        print(StringUtil.hump_case_underline_lower("oneHTTPRequest12AaureBBBXu"))
+        print(StringUtil.underline2hump("hello_word"))
+        print(StringUtil.hump2underline("URLCamelCaseHello12Word"))
+        json_str = """{"userName":"hi"}"""
+        print(StringUtil.json_hump2underline(json_str))
 
     def testFileUtil(self):
         from utils.FileUtil import count_dir_size
