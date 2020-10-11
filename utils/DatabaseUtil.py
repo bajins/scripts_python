@@ -15,6 +15,8 @@ import pandas
 import pymysql
 import pythoncom
 
+from . import StringUtil
+
 
 def dict_factory(cursor, row):
     """
@@ -123,8 +125,11 @@ def excel_to_db(connect, cursor, excel_name, table_name, sheet_index=0, sheet_st
     names = ""  # 字段名，用于插入数据
     field_types = ""  # 字段名及字段类型，用于创建表
     for index in range(field_names.__len__()):
-        # 替换除中文字母数字下划线以外的内容
-        field_name = re.sub(r"[^\u4E00-\u9FA5A-Za-z\d_]", "", field_names[index], 0, re.I)
+        # 替换除中文字母数字空格下划线以外的内容
+        field_name = re.sub(r"[^\u4E00-\u9FA5A-Za-z\d\s_]", "", field_names[index], 0, re.I)
+        # 替换空格为下划线
+        field_name = re.sub(r"\s", "_", field_name, 0, re.I)
+        field_name = StringUtil.hump2underline(field_name)
         names += f"{field_name},"
         field_types += f"{field_name} TEXT,"
     names = names[:-1]
@@ -188,8 +193,11 @@ def excel_to_db_com(connect, cursor, excel_name, table_name, sheet_index=0, shee
     for index in range(col):
         # 获取每个单元格的值，由于cells的索引是从1开始的，故在原有数据的行数和列数的基础上+1
         field_name = sheet.Cells(index + 1).Value  # 得到表头字段名
-        # 替换除中文字母数字下划线以外的内容
-        field_name = re.sub(r"[^\u4E00-\u9FA5A-Za-z\d_]", "", field_name, 0, re.I)
+        # 替换除中文字母数字空格下划线以外的内容
+        field_name = re.sub(r"[^\u4E00-\u9FA5A-Za-z\d\s_]", "", field_name, 0, re.I)
+        # 替换空格为下划线
+        field_name = re.sub(r"\s", "_", field_name, 0, re.I)
+        field_name = StringUtil.hump2underline(field_name)
         names += f"{field_name},"
         field_types += f"{field_name} TEXT,"
     names = names[:-1]
