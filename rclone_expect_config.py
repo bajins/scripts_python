@@ -19,45 +19,35 @@ import sys
 import pexpect
 
 
-def daemon():
+def run_cmd(cmd, popen=True, daemon=False, log_path="rclone.log"):
     """
-    Daemon（守护进程）
+    执行命令并根据参数决定是否在控制台输出执行结果
+    :param cmd:  执行的命令
+    :param popen:  是否回显，默认显示回显到控制台
+    :param daemon:  是否守护进程，默认不启用，当popen=True时才启用
+    :param log_path:  日志文件路径，在popen=False时启用
     :return:
     """
-    # 将当前进程fork为一个守护进程
-    pid = os.fork()
-    if pid > 0:
-        # 父进程退出
-        os._exit(0)
-
-
-def call_cmd(cmd, log_path="rclone.log"):
-    """
-    执行命令不输出回显并输出日志到文件
-    :param cmd: 执行的命令
-    :param log_path: 日志文件路径
-    :return:
-    """
-    call = subprocess.call(f'nohup {cmd} >{log_path} &', shell=True)
-    if call != 0:
-        print(f"执行失败，请查看{log_path}中的日志")
-
-
-def popen_cmd(cmd, charset="utf8"):
-    """
-    执行shell命令并实时输出回显
-    :param cmd: 执行的命令
-    :param charset: 字符集
-    :return:
-    """
-    # universal_newlines=True, bufsize=1
-    process = subprocess.Popen(cmd, shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    # 判断子进程是否结束
-    while process.poll() is None:
-        line = process.stdout.readline()
-        line = line.strip()
-        if line:
-            print(line.decode(charset, 'ignore'))
+    if not popen:  # 执行命令不输出回显并保存执行结果到日志文件（后台运行）
+        call = subprocess.call(f'nohup {cmd} >{log_path} &', shell=True)
+        if call != 0:
+            print(f"执行失败，请查看{log_path}中的日志")
+    else:  # 执行shell命令并实时输出回显
+        if daemon:
+            # 将当前进程fork为一个守护进程
+            pid = os.fork()
+            if pid > 0:
+                # 父进程退出
+                os._exit(0)
+        # universal_newlines=True, bufsize=1
+        process = subprocess.Popen(cmd, shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                                   stderr=subprocess.STDOUT)
+        # 判断子进程是否结束
+        while process.poll() is None:
+            line = process.stdout.readline()
+            line = line.strip()
+            if line:
+                print(line.decode("utf8", 'ignore'))
 
 
 def download_rclone():
@@ -359,34 +349,23 @@ write_google_drive_config(rclone_dir, "gservicedrive", saf=service_account_json)
 print(subprocess.getoutput(f'./{rclone_dir}/rclone config show'))
 
 """
-以下为执行rclone命令，执行命令不输出回显可使用call_cmd函数执行命令或调用daemon函数
+以下为执行rclone命令，如果要后台执行（不在控制台中输出执行结果）请在run_cmd函数中设置参数popen=False
 """
 
-params = " --multi-thread-cutoff 50M --multi-thread-streams 50 --transfers 100 --checkers 100 --buffer-size 50M"
-params += " --cache-chunk-size 50M --tpslimit-burst 2 --ignore-errors -P"
+params = " --multi-thread-cutoff 50M --multi-thread-streams 50 --transfers 100 --checkers 100 --buffer-size 50M" \
+         " --cache-chunk-size 50M --tpslimit-burst 2 --ignore-errors -P"
 # --fast-list 如果可用，请使用递归列表。使用更多的内存，但更少的事务
 # --drive-server-side-across-configs 允许Google Drive服务器端操作跨不同的驱动器，不走本地流量
 # --drive-V2-download-min-size 指定最小大小文件使用驱动器v2 API下载
 
 # 复制分享的链接文件或目录到团队盘
-gdrive_stared_copy = f'./{rclone_dir}/rclone copy --drive-server-side-across-configs gdrive_stared: gdrive_team: {params}'
+# run_cmd(f'./{rclone_dir}/rclone copy --drive-server-side-across-configs gdrive_stared: gdrive_team: {params}')
 # 我的云盘同步到团队盘
-gdrive_team_sync = f'./{rclone_dir}/rclone sync --drive-server-side-across-configs gdrive: gdrive_team: {params}'
+# run_cmd(f'./{rclone_dir}/rclone sync --drive-server-side-across-configs gdrive: gdrive_team: {params}')
 # 查看目录大小，可使用--drive-root-folder-id参数指定其他分享链接ID
-gdrive_size = f'./{rclone_dir}/rclone size gdrive_stared: '
+# run_cmd(f'./{rclone_dir}/rclone size gdrive_stared: ')
 # 通过服务账户授权，指定账户查看网盘大小
-service_gdrive_size = f'./{rclone_dir}/rclone -v --drive-impersonate woytu.com@gmail.com size gservicedrive: '
-
-# 同步
-cmd = f'./{rclone_dir}/rclone sync gdrive:/ onedrive:/ {params}'
+# run_cmd(f'./{rclone_dir}/rclone -v --drive-impersonate woytu.com@gmail.com size gservicedrive: ')
+run_cmd(f'./{rclone_dir}/rclone sync gdrive:/ onedrive:/ {params}')
 # 去重
-# cmd = f'./{rclone_dir}/rclone dedupe --dedupe-mode oldest gdrive:/ {params}'
-
-# call_cmd(cmd)
-
-# daemon()
-# popen_cmd(gdrive_stared_copy)
-# popen_cmd(gdrive_team_sync)
-# popen_cmd(gdrive_size)
-# popen_cmd(service_gdrive_size)
-popen_cmd(cmd)
+# run_cmd(f'./{rclone_dir}/rclone dedupe --dedupe-mode oldest gdrive:/ {params}')
