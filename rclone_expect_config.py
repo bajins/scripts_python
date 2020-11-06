@@ -96,11 +96,17 @@ def auto_rclone_config_start(rclone_dir, storage, drive_name):
     :param drive_name:  自定义远程配置名称
     :return:
     """
-    child = pexpect.spawn(f'./{rclone_dir}/rclone config')
-    # print(child)
+    child = pexpect.spawn(f'./{rclone_dir}/rclone config', timeout=60)
+    # 动态保存每一次expect后的所有内容. before/after都依赖此内容
+    # print(child.buffer.decode())
+    # print(child.read().decode())
     # 如果返回0说明匹配到了异常
-    index = child.expect([pexpect.EOF, 'New remote'])
-    if index == 1:
+    index = child.expect([pexpect.EOF, pexpect.TIMEOUT, 'New remote'])
+    if index == 0:
+        pass
+    elif index == 1:
+        pass
+    elif index == 2:
         # n新建远程
         child.sendline('n')
 
@@ -111,10 +117,10 @@ def auto_rclone_config_start(rclone_dir, storage, drive_name):
     try:
         index = child.expect([pexpect.EOF, 'already exists'])
         if index == 1:
-            print("该远程配置已经存在：", drive_name)
+            print(f"{drive_name} 该远程配置已经存在")
             time.sleep(2)
             return None
-    except:
+    except pexpect.ExceptionPexpect.TIMEOUT:  # 匹配不上将抛出超时异常
         pass
 
     index = child.expect([pexpect.EOF, 'Storage'])
@@ -194,6 +200,17 @@ def one_drive(rclone_dir, drive_name, access_token=None):
     if index == 1:
         # 这里选择1，onedrive个人版或是商业版
         child.sendline('1')
+
+    try:
+        # 授权出现错误
+        index = child.expect([pexpect.EOF, 'Failed to query available drives'])
+        if index == 1:
+            # 动态保存每一次expect后的所有内容. before/after都依赖此内容
+            print(child.buffer.decode())
+            # 抛出授权出现错误异常
+            raise ValueError(f"""{drive_name} 授权出现错误，请重新执行 rclone.exe authorize "onedrive" 以获取新的token """)
+    except pexpect.ExceptionPexpect.TIMEOUT:  # 匹配不上将抛出超时异常
+        pass
 
     index = child.expect([pexpect.EOF, 'Chose drive to use'])
     if index == 1:
