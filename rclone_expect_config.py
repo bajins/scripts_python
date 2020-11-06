@@ -120,7 +120,7 @@ def auto_rclone_config_start(rclone_dir, storage, drive_name):
             print(f"{drive_name} 该远程配置已经存在")
             time.sleep(2)
             return None
-    except pexpect.ExceptionPexpect.TIMEOUT:  # 匹配不上将抛出超时异常
+    except pexpect.TIMEOUT:  # 匹配不上将抛出超时异常
         pass
 
     index = child.expect([pexpect.EOF, 'Storage'])
@@ -209,7 +209,7 @@ def one_drive(rclone_dir, drive_name, access_token=None):
             print(child.buffer.decode())
             # 抛出授权出现错误异常
             raise ValueError(f"""{drive_name} 授权出现错误，请重新执行 rclone.exe authorize "onedrive" 以获取新的token """)
-    except pexpect.ExceptionPexpect.TIMEOUT:  # 匹配不上将抛出超时异常
+    except pexpect.TIMEOUT:  # 匹配不上将抛出超时异常
         pass
 
     index = child.expect([pexpect.EOF, 'Chose drive to use'])
@@ -334,6 +334,7 @@ def write_google_drive_config(rclone_dir, name, token=None, drive_type="drive", 
 """
 
 rclone_dir = download_rclone()
+
 
 one_drive_access_token = """授权"""
 one_drive(rclone_dir, "onedrive", one_drive_access_token)
