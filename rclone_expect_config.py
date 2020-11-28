@@ -96,7 +96,7 @@ def auto_rclone_config_start(rclone_dir, storage, drive_name):
     :param drive_name:  自定义远程配置名称
     :return:
     """
-    child = pexpect.spawn(f'./{rclone_dir}/rclone config', timeout=60)
+    child = pexpect.spawn(f'./{rclone_dir}/rclone config', timeout=20)
     # 动态保存每一次expect后的所有内容. before/after都依赖此内容
     # print(child.buffer.decode())
     # print(child.read().decode())
