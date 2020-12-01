@@ -2,6 +2,7 @@
 # -*- encoding: utf-8 -*-
 #
 # @Description: 根据m3u8描述文件下载文件
+# https://www.bajins.com/Shell/Python%E7%88%AC%E8%99%AB.html#m3u8%E8%A7%A3%E6%9E%90%E4%B8%8B%E8%BD%BD%E8%A7%A3%E5%AF%86%E5%90%88%E5%B9%B6
 # @PreInstall: pycryptodome
 # @Author : https://www.bajins.com
 # @File : m3u8Parse.py
@@ -22,12 +23,12 @@ from glob import iglob
 
 from natsort import natsorted
 from concurrent.futures import ThreadPoolExecutor
-# pip3 uninstall Crypto 并删除Lib/site-packages/crypto
+# pip3 uninstall Crypto 并删除 Lib/site-packages/crypto
 # pip3 install pycryptodome
 from Crypto.Cipher import AES
 
-UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.117 " \
-            "Safari/537.36"
+USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.117 " \
+             "Safari/537.36"
 
 
 # https://docs.python.org/zh-cn/3/library/dataclasses.html
@@ -48,7 +49,7 @@ class DownLoadM3U8(object):
         获取key进行解密，这里可以获取method加密方式进行解密
         """
         if self.m3u8_obj.keys and self.m3u8_obj.keys[0]:
-            res = requests.get(self.m3u8_obj.keys[0].absolute_uri, headers={'User-Agent': UserAgent})
+            res = requests.get(self.m3u8_obj.keys[0].absolute_uri, headers={'User-Agent': USER_AGENT})
             # AES 解密
             return AES.new(res.content, AES.MODE_CBC, res.content)
         else:
@@ -63,7 +64,7 @@ class DownLoadM3U8(object):
         下载ts文件，写入时如果有加密需要解密
         """
         url, ts_name = url_info
-        res = requests.get(url, headers={'User-Agent': UserAgent})
+        res = requests.get(url, headers={'User-Agent': USER_AGENT})
         with open(ts_name, 'wb') as fp:
             if self.cryptor is not None:
                 fp.write(self.cryptor.decrypt(res.content))
