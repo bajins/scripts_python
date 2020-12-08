@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8 -*-
 # @Author : https://www.bajins.com
-# @Description : https://www.bajins.com/System/%E6%8C%82%E8%BD%BD%E7%BD%91%E7%9B%98.html
+# @Description : https://www.bajins.com/System/%E6%8C%82%E8%BD%BD%E7%BD%91%E7%9B%98.html#rclone
 # @File : rclone_expect_config.py
 # @Version: 1.1.0
 # @Time : 2020/7/26 11:00
