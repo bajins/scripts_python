@@ -368,7 +368,9 @@ print(subprocess.getoutput(f'./{rclone_dir}/rclone config show'))
 
 """
 以下为执行rclone命令，如果要后台执行（不在控制台中输出执行结果）请在run_cmd函数中设置参数popen=False
-文件过滤： https://rclone.org/filtering
+文件过滤：
+    https://rclone.org/filtering
+    https://p3terx.com/archives/rclone-advanced-user-manual-common-command-parameters.html#toc_11
 """
 
 params = " --multi-thread-cutoff 50M --multi-thread-streams 50 --transfers 100 --checkers 100 --buffer-size 50M" \
