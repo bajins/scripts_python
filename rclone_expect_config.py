@@ -93,7 +93,9 @@ def auto_rclone_config_start(rclone_dir, storage, drive_name):
     """
     自动配置开始
     :param rclone_dir:  rclone运行目录
-    :param storage:  Microsoft OneDrive:23 , Google Drive:13
+    :param storage:
+        rclone 15.4之前版本 Microsoft OneDrive:23 , Google Drive:13
+        rclone 15.4之后版本 Microsoft OneDrive:26 , Google Drive:15
     :param drive_name:  自定义远程配置名称
     :return:
     """
@@ -126,7 +128,6 @@ def auto_rclone_config_start(rclone_dir, storage, drive_name):
 
     index = child.expect([pexpect.EOF, 'Storage'])
     if index == 1:
-        # Microsoft OneDrive:23 , Google Drive:13
         child.sendline(storage)
 
     index = child.expect([pexpect.EOF, 'client_id'])
@@ -158,18 +159,22 @@ def auto_rclone_config_end(child):
     time.sleep(2)
 
 
-def one_drive(rclone_dir, drive_name, access_token=None):
+def one_drive(rclone_dir, drive_name, region="1", access_token=None):
     """
     One Drive 配置
     :param rclone_dir:  rclone运行目录
     :param drive_name:  自定义远程配置名称
+    :param region: 1全球（回车默认），2美国，3德国，4中国
     :param access_token:  授权token，为执行 rclone authorize "onedrive" 获取到的token
     :return:
     """
-    child = auto_rclone_config_start(rclone_dir, "23", drive_name)
+    child = auto_rclone_config_start(rclone_dir, "26", drive_name)
     if child is None:
         return
 
+    index = child.expect([pexpect.EOF, 'region'])
+    if index == 1:
+        child.sendline(region)
     index = child.expect([pexpect.EOF, 'Edit advanced config'])
     if index == 1:
         # 是否配置高级设置，这里我们直接No，选择n
@@ -233,12 +238,17 @@ def google_drive(rclone_dir, drive_name):
     :param drive_name: 自定义远程配置名称
     :return:
     """
-    child = auto_rclone_config_start(rclone_dir, "13", drive_name)
+    child = auto_rclone_config_start(rclone_dir, "15", drive_name)
     if child is None:
         return
 
     index = child.expect([pexpect.EOF, 'scope'])
     if index == 1:
+        # 1完全访问所有文件，但“应用程序数据文件夹”除外
+        # 2仅只读访问由rclone创建的文件
+        # 3在驱动器网站上可见，允许对“应用程序数据”文件夹进行读写访问
+        # 4在驱动器网站上不可见，允许对文件元数据进行只读访问
+        # 5不允许任何访问来读取或下载文件内容
         child.sendline('1')
 
     index = child.expect([pexpect.EOF, 'root_folder_id'])
@@ -336,9 +346,8 @@ def write_google_drive_config(rclone_dir, name, token=None, drive_type="drive", 
 
 rclone_dir = download_rclone()
 
-
 one_drive_access_token = """授权"""
-one_drive(rclone_dir, "onedrive", one_drive_access_token)
+one_drive(rclone_dir, "onedrive", "1", one_drive_access_token)
 
 google_drive_token = """授权"""
 write_google_drive_config(rclone_dir, "gdrive", google_drive_token)
