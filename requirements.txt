@@ -15,5 +15,5 @@ natsort==7.0.1
 selenium==3.141.0
 pywin32==228
 beautifulsoup4==4.9.3
-Pillow==7.2.0
+Pillow>=8.1.1
 pycryptodome==3.9.8
