@@ -162,6 +162,7 @@ def auto_rclone_config_end(child):
 def one_drive(rclone_dir, drive_name, region="1", access_token=None):
     """
     One Drive 配置
+    api返回错误信息：https://docs.microsoft.com/zh-cn/onedrive/developer/rest-api/concepts/errors
     :param rclone_dir:  rclone运行目录
     :param drive_name:  自定义远程配置名称
     :param region: 1全球（回车默认），2美国，3德国，4中国
@@ -212,7 +213,10 @@ def one_drive(rclone_dir, drive_name, region="1", access_token=None):
         index = child.expect([pexpect.EOF, 'Failed to query available drives'])
         if index == 1:
             # 动态保存每一次expect后的所有内容. before/after都依赖此内容
-            print(child.buffer.decode())
+            buffer = child.buffer.decode()
+            print(buffer)
+            if "HTTP error 429 (429 Too Many Requests)" in buffer:
+                raise ValueError("429请求太多：请等待一段时间后再次尝试！")
             # 抛出授权出现错误异常
             raise ValueError(f"""{drive_name} 授权出现错误，请重新执行 rclone.exe authorize "onedrive" 以获取新的token """)
     except pexpect.TIMEOUT:  # 匹配不上将抛出超时异常
@@ -234,6 +238,7 @@ def one_drive(rclone_dir, drive_name, region="1", access_token=None):
 def google_drive(rclone_dir, drive_name):
     """
     Google Drive 远程配置
+    api返回错误信息：https://developers.google.com/drive/api/v3/handle-errors
     :param rclone_dir: rclone运行目录
     :param drive_name: 自定义远程配置名称
     :return:
