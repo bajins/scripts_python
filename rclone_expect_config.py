@@ -218,7 +218,7 @@ def one_drive(rclone_dir, drive_name, region="1", access_token=None):
             if "HTTP error 429 (429 Too Many Requests)" in buffer:
                 raise ValueError("429请求太多：请等待一段时间后再次尝试！")
             # 抛出授权出现错误异常
-            raise ValueError(f"""{drive_name} 授权出现错误，请重新执行 rclone.exe authorize "onedrive" 以获取新的token """)
+            raise ValueError(f"""{drive_name} 授权出现错误，请重新执行 ./rclone.exe authorize "onedrive" 以获取新的token """)
     except pexpect.TIMEOUT:  # 匹配不上将抛出超时异常
         pass
 
