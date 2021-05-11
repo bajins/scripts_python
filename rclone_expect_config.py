@@ -18,6 +18,9 @@ import time
 import sys
 # 自动执行命令，pip install pexpect
 import pexpect
+import zipfile
+import shutil
+import stat
 
 
 def run_cmd(cmd, popen=True, daemon=False, log_path="rclone.log"):
@@ -39,7 +42,7 @@ def run_cmd(cmd, popen=True, daemon=False, log_path="rclone.log"):
             pid = os.fork()
             if pid > 0:
                 # 父进程退出
-                os._exit(0)
+                sys.exit(0)
         # universal_newlines=True, bufsize=1
         process = subprocess.Popen(cmd, shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                                    stderr=subprocess.STDOUT)
@@ -76,16 +79,34 @@ def download_rclone():
             download_url = asset["browser_download_url"]
             # rclone压缩包名
             zip_name = asset["name"]
-            # 删除同名压缩包
-            os.system(f"find . -type f -name '{zip_name}*' | xargs rm")
+            if os.path.exists(zip_name):
+                # 删除同名压缩包
+                os.remove(zip_name)
             # 解压后目录名
             dir_name = zip_name.replace(".zip", "")
-            # 删除同名目录，防止目录中的文件已被删除
-            os.system(f"rm -rf {dir_name}")
+            if os.path.exists(dir_name):
+                # 删除同名目录，防止目录中的文件已被删除
+                shutil.rmtree(dir_name)
             # 下载当前系统架构的文件
-            subprocess.call(['wget', download_url])
-            # 解压
-            subprocess.call(['unzip', zip_name])
+            # 创建一个opener对象
+            opener = urllib.request.build_opener()
+            # 向opener传入请求头信息
+            opener.addheaders.append(('User-agent', user_agent))
+            # 将创建好的opener对象装入request
+            urllib.request.install_opener(opener)
+            filename, res = urllib.request.urlretrieve(download_url, zip_name)
+            # 从urlretrieve调用中清理临时文件
+            urllib.request.urlcleanup()
+            if not os.path.exists(filename):
+                raise Exception("rclone下载失败！")
+            if zipfile.is_zipfile(zip_name):
+                # 解压
+                with zipfile.ZipFile(zip_name, "r") as zip_obj:
+                    zip_obj.extractall(path=".")
+            # 授权：https://blog.csdn.net/u013632755/article/details/106599210
+            # os.chmod(dir_name, stat.S_IRWXO + stat.S_IRWXO + stat.S_IRWXO + stat.S_IRWXO)
+            subprocess.run(['chmod', "-R", "777", dir_name], universal_newlines=True, stdout=subprocess.PIPE,
+                           stderr=subprocess.PIPE, shell=False)
             return dir_name
 
 
