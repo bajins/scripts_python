@@ -334,7 +334,8 @@ def write_google_drive_config(rclone_dir, name, token=None, drive_type="drive", 
     conf = configparser.ConfigParser()
     # 获取rclone配置文件的路径
     file = subprocess.getoutput(f"./{rclone_dir}/rclone config file")
-    file = file.split("\n")[1]
+    file = file.split("\n")
+    file = file[len(file) - 1]
     # 读取配置
     conf.read(file, encoding="utf-8")
     # 获取配置中的远程节点
