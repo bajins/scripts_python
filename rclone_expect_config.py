@@ -22,6 +22,8 @@ import zipfile
 import shutil
 import stat
 
+os.chdir('/home')  # 改变当前工作目录，在Jupyter Notebook中使用 %cd /home
+
 
 def run_cmd(cmd, popen=True, daemon=False, log_path="rclone.log"):
     """
