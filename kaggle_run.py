@@ -33,7 +33,7 @@ from kaggle.rest import ApiException
 # 第一个参数是一个可以返回时间戳的函数，第二个参数可以在定时未到达之前阻塞。
 schedule = sched.scheduler(time.time, time.sleep)
 
-# 用两个定时任务，一个查内核列表和状态，一个执行提交内核
+# 用两个定时任务，一个查内核列表和状态并提交内核，一个执行本地的内核文件提交
 pull_kernel_queue = Queue(maxsize=0)  # 存放内核执行状态
 pull_run_qty = 6
 local_kernel_queue = Queue(maxsize=0)  # 存放本地内核信息
@@ -101,7 +101,7 @@ def pull_push():
     # 消费队列数据，进行推送
     # ==================
     if pull_run_qty == 0:
-        schedule.enter(3 * 60 * 60, 1, pull_push)  # 3小时后再次运行
+        schedule.enter(10 * 60 * 60, 1, pull_push)  # 10小时后再次运行
         return
     qty = pull_run_qty
     if pull_kernel_queue.qsize() < pull_run_qty:
@@ -121,11 +121,11 @@ def pull_push():
                 print(kn["fully_name"], e.status, e.reason)
                 # kernels_initialize(ka, kn["name"], kernel_path)  # 初始化
         pull_kernel_queue.task_done()  # 消费任务完成
-        schedule.enter(10 * 60 * 60, 1, pull_push)  # 10小时后再次运行
+        schedule.enter(30 * 60 * 60, 1, pull_push)  # 30小时后再次运行
     except queue.Empty:
         # print((datetime.datetime.now() + datetime.timedelta(hours=25)).strftime("%Y-%m-%d %H:%M:%S"))
         print("队列为空", datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-        schedule.enter(3 * 60 * 60, 1, pull_push)  # 10小时后再次运行
+        schedule.enter(10 * 60 * 60, 1, pull_push)  # 10小时后再次运行
 
 
 def local_push():
@@ -160,7 +160,7 @@ def local_push():
             kernels_initialize(ka, kn["name"], path)  # 初始化
         ka.kernels_push(path)  # 提交文件夹中所有的内核
     local_kernel_queue.task_done()  # 消费任务完成
-    schedule.enter(10 * 60 * 60, 0, local_push)  # 10小时后再次运行
+    schedule.enter(30 * 60 * 60, 0, local_push)  # 30小时后再次运行
 
 
 def kernels_initialize(api, name, folder):
