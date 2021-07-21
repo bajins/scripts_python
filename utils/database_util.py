@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- encoding: UTF-8 -*-
 # @Author : Administrator
-# @File : DatabaseUtil.py
+# @File : database_util.py
 # @Version: 1.0.0
 # @Time : 2019/8/16 13:02
 # @Project: scripts_python
@@ -15,7 +15,7 @@ import pandas
 import pymysql
 import pythoncom
 
-from . import StringUtil
+from . import string_util
 
 
 def dict_factory(cursor, row):
@@ -129,7 +129,7 @@ def excel_to_db(connect, cursor, excel_name, table_name, sheet_index=0, sheet_st
         field_name = re.sub(r"[^\u4E00-\u9FA5A-Za-z\d\s_]", "", field_names[index], 0, re.I)
         # 替换空格为下划线
         field_name = re.sub(r"\s", "_", field_name, 0, re.I)
-        field_name = StringUtil.hump2underline(field_name)
+        field_name = string_util.hump2underline(field_name)
         names += f"{field_name},"
         field_types += f"{field_name} TEXT,"
     names = names[:-1]
@@ -197,7 +197,7 @@ def excel_to_db_com(connect, cursor, excel_name, table_name, sheet_index=0, shee
         field_name = re.sub(r"[^\u4E00-\u9FA5A-Za-z\d\s_]", "", field_name, 0, re.I)
         # 替换空格为下划线
         field_name = re.sub(r"\s", "_", field_name, 0, re.I)
-        field_name = StringUtil.hump2underline(field_name)
+        field_name = string_util.hump2underline(field_name)
         names += f"{field_name},"
         field_types += f"{field_name} TEXT,"
     names = names[:-1]

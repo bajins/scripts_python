@@ -2,7 +2,7 @@
 # -*- encoding: utf-8 -*-
 #
 # @Author : bajins https://www.bajins.com
-# @File : ReptileUtil.py
+# @File : reptile_util.py
 # @Version: 1.0.0
 # @Time : 2019/9/18 16:22
 # @Project: scripts_python
@@ -28,7 +28,7 @@ from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.expected_conditions import presence_of_element_located
 from selenium.webdriver.support.wait import WebDriverWait
 
-from . import HttpUtil, FileUtil, SystemUtil
+from . import http_util, file_util, system_util
 
 
 def get_local_version(prefix):
@@ -39,7 +39,7 @@ def get_local_version(prefix):
     """
     sysstr = platform.system()
     if sysstr == "Windows":
-        local_version = SystemUtil.get_windows_software()["Google Chrome"].split(".")[0]
+        local_version = system_util.get_windows_software()["Google Chrome"].split(".")[0]
     elif sysstr == "Linux":
         local_version = os.popen('google-chrome --version').read().split(" ")[3].split(".")[0]
 
@@ -59,7 +59,7 @@ def download_chromedriver():
     """
     # 获取版本号列表
     url = "http://chromedriver.storage.googleapis.com/"
-    result = BeautifulSoup(HttpUtil.get(url, {"delimiter": "/", "prefix": ""}).text, features="lxml")
+    result = BeautifulSoup(http_util.get(url, {"delimiter": "/", "prefix": ""}).text, features="lxml")
     prefix = result.find_all("prefix")
     # 过滤
     # info = [s.extract() for s in prefix('prefix')]
@@ -67,7 +67,7 @@ def download_chromedriver():
     local_version = get_local_version(prefix)
 
     # 获取版本下面的文件列表
-    driver_list = BeautifulSoup(HttpUtil.get(url, {"delimiter": "/", "prefix": local_version}).text, features="lxml")
+    driver_list = BeautifulSoup(http_util.get(url, {"delimiter": "/", "prefix": local_version}).text, features="lxml")
     filename_list = driver_list.find_all("key")
 
     for s in filename_list:
@@ -76,8 +76,8 @@ def download_chromedriver():
         if s.find(sys.platform) != -1:
             filename = s[len(local_version):]
             # 下载文件
-            HttpUtil.download_file(url + s, None, filename)
-            FileUtil.zip_extract(filename, None)
+            http_util.download_file(url + s, None, filename)
+            file_util.zip_extract(filename, None)
 
 
 def download_taobao_chromedriver():
@@ -88,7 +88,7 @@ def download_taobao_chromedriver():
     """
     # 获取版本号列表
     url = "http://npm.taobao.org/mirrors/chromedriver/"
-    result = BeautifulSoup(HttpUtil.get(url).text, features="lxml")
+    result = BeautifulSoup(http_util.get(url).text, features="lxml")
     prefix = result.find("pre").find_all("a")
     # 过滤
     # info = [s.extract() for s in prefix('prefix')]
@@ -96,7 +96,7 @@ def download_taobao_chromedriver():
     local_version_url = url + get_local_version(prefix)
 
     # 获取版本下面的文件列表
-    driver_list = BeautifulSoup(HttpUtil.get(local_version_url).text, features="lxml")
+    driver_list = BeautifulSoup(http_util.get(local_version_url).text, features="lxml")
     filename_list = driver_list.find_all("a")
 
     for s in filename_list:
@@ -104,8 +104,8 @@ def download_taobao_chromedriver():
         # 如果在文件名中找到系统平台名称
         if s.find(sys.platform) != -1:
             # 下载文件
-            HttpUtil.download_file(local_version_url + s, None, s)
-            FileUtil.zip_extract(s, None)
+            http_util.download_file(local_version_url + s, None, s)
+            file_util.zip_extract(s, None)
 
 
 def selenium_driver(url, headless=True, incognito=True):
@@ -128,7 +128,7 @@ def selenium_driver(url, headless=True, incognito=True):
     options = webdriver.ChromeOptions()
     # 手动指定使用的浏览器位置
     # options.binary_location = r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe"
-    options.add_argument(f'-user-agent={HttpUtil.USER_AGENT}')
+    options.add_argument(f'-user-agent={http_util.USER_AGENT}')
     # 启动即窗口最大化
     options.add_argument("-start-maximized")
     # 关闭"chrome正受到自动测试软件的控制"提示和控制台打印DevTools listening

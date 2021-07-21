@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8 -*-
 # @Author : bajins https://www.bajins.com
-# @File : Pexels.py
+# @File : pexels.py
 # @Version: 1.0.0
 # @Time : 2019/10/16 15:22
 # @Project: scripts_python
@@ -19,21 +19,21 @@ from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver import ActionChains
 from selenium.webdriver.common.keys import Keys
 
-import Constants
-from utils import HttpUtil, DatabaseUtil, FileUtil, SystemUtil, TranslationUtil, ReptileUtil
+import constants
+from utils import http_util, database_util, file_util, system_util, translation_util, reptile_util
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 
-s3 = DatabaseUtil.Sqlite3(os.path.join(Constants.DATA_PATH, "pexels"))
+s3 = database_util.Sqlite3(os.path.join(constants.DATA_PATH, "pexels"))
 
 run_count = 0
 
 
 def download_latest_images(page, directory):
     try:
-        SystemUtil.restart_process(os.path.abspath(__file__))
+        system_util.restart_process(os.path.abspath(__file__))
 
-        html = BeautifulSoup(HttpUtil.get("https://www.pexels.com/zh-cn/new-photos?page=" + str(page)).text,
+        html = BeautifulSoup(http_util.get("https://www.pexels.com/zh-cn/new-photos?page=" + str(page)).text,
                              features="lxml")
         articles = html.find_all("article")
         pages_html = BeautifulSoup(str(html.find("div", {"class": "pagination"})), features="lxml").find_all("a")
@@ -53,7 +53,7 @@ def download_latest_images(page, directory):
             download_url = article["data-photo-modal-image-download-link"]
             image_name = f"pexels-photo-{image_id}.jpg"
 
-            info_html = BeautifulSoup(HttpUtil.get("https://www.pexels.com/zh-cn/photo/" + image_id).text,
+            info_html = BeautifulSoup(http_util.get("https://www.pexels.com/zh-cn/photo/" + image_id).text,
                                       features="lxml")
             tags = info_html.find("meta", {"name": "keywords"}).attrs["content"]
             if len(tags) > 0 and tags != "":
@@ -73,7 +73,7 @@ def download_latest_images(page, directory):
                 # 每张图片启用单个线程下载
                 # done = ThreadPool.pool.submit(HttpUtil.download_file, download_url, directory, image_name)
                 # done.add_done_callback(ThreadPool.thread_call_back)
-                asyncio.run(HttpUtil.download_one_async(download_url, directory, image_name))
+                asyncio.run(http_util.download_one_async(download_url, directory, image_name))
 
         global run_count
         run_count += 1
@@ -103,8 +103,8 @@ def download_latest_images_selenium(page, directory):
     :param directory:
     :return:
     """
-    SystemUtil.restart_process(os.path.abspath(__file__))
-    driver = ReptileUtil.selenium_driver("https://www.pexels.com/new-photos?page=" + str(page))
+    system_util.restart_process(os.path.abspath(__file__))
+    driver = reptile_util.selenium_driver("https://www.pexels.com/new-photos?page=" + str(page))
     try:
         articles = driver.find_elements_by_tag_name("article")
         next_page = True
@@ -125,7 +125,7 @@ def download_latest_images_selenium(page, directory):
             tags = ""
             if driver.title.find("500") == -1:
                 tags = driver.find_element_by_xpath("//meta[@name='keywords']").get_attribute("content")
-                tags = TranslationUtil.translate_google(tags).replace("，", ",")
+                tags = translation_util.translate_google(tags).replace("，", ",")
                 tags = re.sub(r"[^a-z,\u4e00-\u9fa5]+|^,|,$", "", tags).replace(",,", ",")
             # 关闭当前窗口。
             driver.close()
@@ -140,7 +140,7 @@ def download_latest_images_selenium(page, directory):
             image_name = f"pexels-photo-{image_id}.jpg"
             # 判断文件是否存在
             if not os.path.exists(os.path.join(directory, image_name)):
-                asyncio.run(HttpUtil.download_one_async(download_url, directory, image_name))
+                asyncio.run(http_util.download_one_async(download_url, directory, image_name))
         global run_count
         run_count += 1
 
@@ -167,11 +167,11 @@ def download_latest_images_selenium(page, directory):
 
 
 def run_command(directory):
-    dir_size = FileUtil.count_dir_size(directory)
+    dir_size = file_util.count_dir_size(directory)
     if dir_size >= 107374182400:
-        print(FileUtil.size_unit_format(dir_size))
+        print(file_util.size_unit_format(dir_size))
         print(os.system("rclone move /home/reptile-python/images/ gdrive:/images --min-size 100k"))
-        print(FileUtil.size_unit_format(FileUtil.count_dir_size(directory)))
+        print(file_util.size_unit_format(file_util.count_dir_size(directory)))
     print(os.popen("rclone dedupe gdrive:/images --dedupe-mode newest").read())
     print(os.popen("rclone delete gdrive:/images --max-size 100k").read())
     threading.Timer(21600, run_command, (directory,)).start()

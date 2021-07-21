@@ -12,14 +12,14 @@
 import logging
 import os
 
-import Constants
-from utils import HttpUtil
-from utils.ExceptionUtil import MsgException
+import constants
+from utils import http_util
+from utils.exception_util import MsgException
 
 
 def get_360_category():
     data = {'c': 'WallPaper', 'a': 'getAllCategoriesV2', 'from': '360chrome'}
-    category = HttpUtil.get(url='http://wallpaper.apc.360.cn/index.php', data=data)
+    category = http_util.get(url='http://wallpaper.apc.360.cn/index.php', data=data)
     if category["errno"] != "0":
         raise MsgException('请求接口错误', category["errmsg"])
     return category["data"]
@@ -31,7 +31,7 @@ def get_360_category_image():
     logging.debug(category)
     # cid分类ID，start从第几幅图开始(用于分页)，count每次加载的数量最大200
     data = {'c': 'WallPaper', 'a': 'getAppsByCategory', 'cid': '36', 'start': 0, 'count': 200, 'from': '360chrome'}
-    response = HttpUtil.get(url='http://wallpaper.apc.360.cn/index.php', data=data)
+    response = http_util.get(url='http://wallpaper.apc.360.cn/index.php', data=data)
     if response["errno"] != "0":
         raise MsgException('请求接口错误', response["errmsg"])
 
@@ -45,7 +45,7 @@ def get_360_update_image():
     # order排序，start从第几幅图开始(用于分页)，count每次加载的数量最大200
     data = {'c': 'WallPaper', 'a': 'getAppsByOrder', 'order': 'create_time', 'start': 0, 'count': 200,
             'from': '360chrome'}
-    response = HttpUtil.get(url='http://wallpaper.apc.360.cn/index.php', data=data)
+    response = http_util.get(url='http://wallpaper.apc.360.cn/index.php', data=data)
     if response["errno"] != "0":
         raise MsgException('请求接口错误', response["errmsg"])
 
@@ -58,7 +58,7 @@ def get_360_image(images):
     for image in images:
         url = image["url"]
         # 拼接目录路径
-        directory = os.path.join(Constants.APP_DIRECTORY, "images")
+        directory = os.path.join(constants.APP_DIRECTORY, "images")
         # 如果目录不存在则创建
         if not os.path.exists(directory):
             os.makedirs(directory)
@@ -67,4 +67,4 @@ def get_360_image(images):
         # 拼接文件绝对路径
         image_path = os.path.join(directory, urls[len(urls) - 1])
 
-        HttpUtil.download_file(image_path, url)
+        http_util.download_file(image_path, url)

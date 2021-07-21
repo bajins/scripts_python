@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8 -*-
 # @Author : bajins https://www.bajins.com
-# @File : ContentType.py
+# @File : content_type.py
 # @Version: 1.0.0
 # @Time : 2019/8/22 9:24
 # @Project: windows-wallpaper-python

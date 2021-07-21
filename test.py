@@ -2,7 +2,7 @@
 # -*- encoding: utf-8 -*-
 #
 # @Author : bajins https://www.bajins.com
-# @File : Test.py
+# @File : test.py
 # @Version: 1.0.0
 # @Time : 5050/9/30 13:00
 # @Project: scripts_python
@@ -37,7 +37,7 @@ class Test(unittest.TestCase):
     def testReptileUtil(self):
         # download_taobao_chromedriver()
         # download_chromedriver()
-        from utils.ReptileUtil import SafeDriver
+        from utils.reptile_util import SafeDriver
         safe_driver = SafeDriver("https://www.bajins.com")  # 触发__del__
         # 仅仅从功能上来说，instance 变量与safe_driver变量完全一样
         # 所不同的是，使用with启用上下文管理器以后，在退出缩进的时候会执行__exit__中的内容。
@@ -48,7 +48,7 @@ class Test(unittest.TestCase):
 
     def testSystemUtil(self):
         # print(get_windows_software())
-        from utils.SystemUtil import restart_process
+        from utils.system_util import restart_process
         restart_process(os.path.abspath(__file__))
 
     def testStringUtil(self):
@@ -56,17 +56,17 @@ class Test(unittest.TestCase):
         # print(random.randint(5000, 5017))
         # from utils.StringUtil import is_empty
         # is_empty("")
-        from utils import StringUtil
-        print(StringUtil.hump_case_underline_lower("oneHTTPRequest12AaureBBBXu"))
-        print(StringUtil.underline2hump("hello_word"))
-        print(StringUtil.hump2underline("URLCamelCaseHello12Word"))
+        from utils import string_util
+        print(string_util.hump_case_underline_lower("oneHTTPRequest12AaureBBBXu"))
+        print(string_util.underline2hump("hello_word"))
+        print(string_util.hump2underline("URLCamelCaseHello12Word"))
         json_str = """{"userName":"hi"}"""
-        print(StringUtil.json_hump2underline(json_str))
+        print(string_util.json_hump2underline(json_str))
 
     def testFileUtil(self):
-        from utils.FileUtil import count_dir_size
+        from utils.file_util import count_dir_size
         print(count_dir_size("images"))
-        from utils.FileUtil import size_unit_format
+        from utils.file_util import size_unit_format
         print(size_unit_format(25635891))
 
     def testMultipartFileUtil(self):
@@ -74,14 +74,14 @@ class Test(unittest.TestCase):
         # t.start()
         url = input(u"The URL Waiting for downloading:")
         filename = input(u"The Filepath to save:")
-        from utils.MultipartFileUtil import download
+        from utils.multipart_file_util import download
         t = download(url, filename)
         while t.is_alive():
             time.sleep(60)
         print("bye")
 
     def testDatabaseUtil(self):
-        from utils.DatabaseUtil import Sqlite3
+        from utils.database_util import Sqlite3
         s3 = Sqlite3("test")
         s3.excel_to_db_com(r"./test.xlsx", "test", password="test")
 

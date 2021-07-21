@@ -4,7 +4,7 @@
 # @Description: 获取虚拟信息
 # @PreInstall: BeautifulSoup,lxml,requests
 # @Author : https://www.bajins.com
-# @File : FakeWebsite.py
+# @File : fake_website.py
 # @Version: 1.0.0
 # @Time : 2019/12/26/026 12:10
 # @Project: reptile-python

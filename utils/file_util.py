@@ -4,7 +4,7 @@
 # @Description:
 # @PreInstall: Pillow
 # @Author : bajins https://www.bajins.com
-# @File : FileUtil.py
+# @File : file_util.py
 # @Version: 1.0.0
 # @Time : 2019/8/21 15:32
 # @Project: windows-wallpaper-python
@@ -21,7 +21,7 @@ from shutil import copy
 # pip install Pillow
 from PIL import Image
 
-from . import StringUtil
+from . import string_util
 
 
 def path_join(*path):
@@ -33,11 +33,11 @@ def path_join(*path):
     final_path = ""
     for i in range(len(path)):
         p = path[i]
-        if StringUtil.is_empty(p):
+        if string_util.is_empty(p):
             continue
-        if StringUtil.check_startswith(p):
+        if string_util.check_startswith(p):
             p = p[1:]
-        if StringUtil.check_endswith(p):
+        if string_util.check_endswith(p):
             p = p[:-1]
         if i == 0:
             final_path = p

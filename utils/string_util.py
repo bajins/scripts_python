@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8 -*-
 # @Author : bajins https://www.bajins.com
-# @File : StringUtil.py
+# @File : string_util.py
 # @Version: 1.0.0
 # @Time : 2019/8/22 9:10
 # @Project: windows-wallpaper-python

@@ -3,7 +3,7 @@
 # @Description: https://www.jianshu.com/p/e0f42bd3a3ea
 # @PreInstall: 
 # @Author : claer
-# @File : MultipartFileUtil.py
+# @File : multipart_file_util.py
 # @Version: 1.0.0
 # @Time : 2019/10/18 23:23
 # @Project: scripts_python
@@ -15,10 +15,10 @@ import threading
 import os
 import time
 
-from . import HttpUtil
+from . import http_util
 
 
-def download(url, file_name, headers=HttpUtil.header):
+def download(url, file_name, headers=http_util.header):
     t = DownloadWorkerThread(url, file_name, headers=headers)
     t.start()
     return t

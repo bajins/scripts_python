@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8 -*-
 # @Author : bajins https://www.bajins.com
-# @File : Wallhaven.py
+# @File : wallhaven.py
 # @Version: 1.0.0
 # @Time : 2019/10/12 10:27
 # @Project: scripts_python
@@ -15,10 +15,10 @@ import time
 
 from bs4 import BeautifulSoup
 
-import Constants
-from utils import HttpUtil, DatabaseUtil, TranslationUtil, FileUtil, SystemUtil
+import constants
+from utils import http_util, database_util, translation_util, file_util, system_util
 
-s3 = DatabaseUtil.Sqlite3(os.path.join(Constants.DATA_PATH, "wallhaven"))
+s3 = database_util.Sqlite3(os.path.join(constants.DATA_PATH, "wallhaven"))
 
 run_count = 0
 
@@ -32,9 +32,9 @@ def download_images(url, page, directory):
     :return:
     """
     try:
-        SystemUtil.restart_process(os.path.abspath(__file__))
+        system_util.restart_process(os.path.abspath(__file__))
 
-        html = BeautifulSoup(HttpUtil.get(url + str(page)).text, features="lxml")
+        html = BeautifulSoup(http_util.get(url + str(page)).text, features="lxml")
         figure = html.find_all("figure")
         # 获取所有包含指定属性的标签
         page_all = html.find_all(lambda tag: tag.has_attr('original-title'))
@@ -49,12 +49,12 @@ def download_images(url, page, directory):
             image_id = label.attrs["data-wallpaper-id"]
 
             # 图片详情页
-            info_html = BeautifulSoup(HttpUtil.get("https://wallhaven.cc/w/" + image_id).text, features="lxml")
+            info_html = BeautifulSoup(http_util.get("https://wallhaven.cc/w/" + image_id).text, features="lxml")
             tags_html = info_html.find_all("a", {"class": "tagname", "rel": "tag"})
             # 图片的标签
             tags = ",".join([tag_html.text for tag_html in tags_html]).replace("'", "")
             if len(tags) > 0 and tags != "":
-                tags = TranslationUtil.translate_google(tags).replace("，", ",")
+                tags = translation_util.translate_google(tags).replace("，", ",")
                 tags = re.sub(r"[^a-z,\u4e00-\u9fa5]+|^,|,$", "", tags).replace(",,", ",")
 
             download_url = info_html.find("img", {"id": "wallpaper"}).attrs["src"]
@@ -75,7 +75,7 @@ def download_images(url, page, directory):
                 # 每张图片启用单个线程下载
                 # done = ThreadPool.pool.submit(HttpUtil.download_file, download_url, directory, image_name)
                 # done.add_done_callback(ThreadPool.thread_call_back)
-                asyncio.run(HttpUtil.download_one_async(download_url, directory, image_name))
+                asyncio.run(http_util.download_one_async(download_url, directory, image_name))
         global run_count
         run_count += 1
 
@@ -124,7 +124,7 @@ def get_tag(page):
     :param page: 页码
     :return:
     """
-    html = BeautifulSoup(HttpUtil.get(f"https://wallhaven.cc/tags?page={str(page)}").text, features="lxml")
+    html = BeautifulSoup(http_util.get(f"https://wallhaven.cc/tags?page={str(page)}").text, features="lxml")
     tags_html = html.find_all("a", {"class": "sfw"})
     for tag_html in tags_html:
         url = tag_html.attrs["href"]
@@ -141,11 +141,11 @@ def get_tag(page):
 
 
 def run_command(directory):
-    dir_size = FileUtil.count_dir_size(directory)
+    dir_size = file_util.count_dir_size(directory)
     if dir_size >= 10737418240:
-        print(FileUtil.size_unit_format(dir_size))
+        print(file_util.size_unit_format(dir_size))
         print(os.system("rclone move /home/reptile-python/images/ onedrive:/images --min-size 100k"))
-        print(FileUtil.size_unit_format(FileUtil.count_dir_size(directory)))
+        print(file_util.size_unit_format(file_util.count_dir_size(directory)))
     print(os.popen("rclone dedupe onedrive:/images --dedupe-mode newest").read())
     print(os.popen("rclone delete onedrive:/images --max-size 100k").read())
     threading.Timer(3600, run_command, (directory,)).start()

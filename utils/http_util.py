@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8 -*-
 # @Author : bajins https://www.bajins.com
-# @File : HttpUtil.py
+# @File : http_util.py
 # @Version: 1.0.0
 # @Time : 2019/8/21 15:32
 # @Project: windows-wallpaper-python

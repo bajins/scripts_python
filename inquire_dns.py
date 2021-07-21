@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8 -*-
 # @Author : bajins https://www.bajins.com
-# @File : InquireDNS.py
+# @File : inquire_dns.py
 # @Version: 1.0.0
 # @Time : 2019/8/21 15:56
 # @Project: windows-wallpaper-python
@@ -20,8 +20,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.wait import WebDriverWait
 
-import Constants
-from utils import HttpUtil, FileUtil, StringUtil, ObjectUtil, ReptileUtil
+import constants
+from utils import http_util, file_util, string_util, object_util, reptile_util
 
 
 def get_chinaz_ip():
@@ -30,9 +30,9 @@ def get_chinaz_ip():
     :return:
     """
     try:
-        for domain in Constants.GITHUB_DOMAIN:
+        for domain in constants.GITHUB_DOMAIN:
             try:
-                driver = ReptileUtil.selenium_driver(Constants.CHINAZ_DNS)
+                driver = reptile_util.selenium_driver(constants.CHINAZ_DNS)
                 # driver.set_page_load_timeout(20)
                 input_element = driver.find_element_by_xpath('//*[@id="host"]')
                 # 传入值，输入的内容
@@ -63,10 +63,10 @@ def delete_dns(dns):
     :param dns: 数组
     :return: 删除后的hosts
     """
-    hosts = FileUtil.read_file(Constants.HOSTS_PATH)
+    hosts = file_util.read_file(constants.HOSTS_PATH)
     new_hosts = []
     for host in hosts:
-        if not ObjectUtil.is_in_array(host.strip("\n"), dns):
+        if not object_util.is_in_array(host.strip("\n"), dns):
             new_hosts.append(host)
     return new_hosts
 
@@ -77,8 +77,8 @@ def update_hosts(new_hosts):
     :param new_hosts: 新的dns数组
     :return:
     """
-    FileUtil.remove_read_only(Constants.HOSTS_PATH)
-    FileUtil.write_lines(Constants.HOSTS_PATH, new_hosts)
+    file_util.remove_read_only(constants.HOSTS_PATH)
+    file_util.write_lines(constants.HOSTS_PATH, new_hosts)
     # 刷新dns
     os.system("ipconfig /flushdns")
 
@@ -89,12 +89,12 @@ def get_myssl_ip():
     :return:
     """
 
-    new_hosts = delete_dns(Constants.GITHUB_DOMAIN)
+    new_hosts = delete_dns(constants.GITHUB_DOMAIN)
 
-    for domain in Constants.GITHUB_DOMAIN:
+    for domain in constants.GITHUB_DOMAIN:
         try:
             data = {"qtype": 1, "host": domain, "qmode": -1}
-            response = HttpUtil.get(url=Constants.MYSSL_DNS, data=data)
+            response = http_util.get(url=constants.MYSSL_DNS, data=data)
             jsp = json.loads(response.text)
             if jsp["code"] == 0 and jsp["error"] is None:
                 result_data = jsp["data"]
@@ -116,12 +116,12 @@ def get_short_time_mail_dns():
     通过shorttimemail.com查询DNS
     :return:
     """
-    new_hosts = delete_dns(Constants.GITHUB_DOMAIN)
+    new_hosts = delete_dns(constants.GITHUB_DOMAIN)
 
-    for domain in Constants.GITHUB_DOMAIN:
+    for domain in constants.GITHUB_DOMAIN:
         try:
             data = {"server": "8.8.8.8", "rrtype": "A", "domain": domain}
-            response = HttpUtil.get(url=Constants.SHORT_TIME_MAIL_DNS, data=data)
+            response = http_util.get(url=constants.SHORT_TIME_MAIL_DNS, data=data)
             jsp = json.loads(response.text)
             if jsp["code"] == 0:
                 # 拼接host

@@ -5,7 +5,7 @@
 # https://www.bajins.com/Shell/Python%E7%88%AC%E8%99%AB.html#m3u8%E8%A7%A3%E6%9E%90%E4%B8%8B%E8%BD%BD%E8%A7%A3%E5%AF%86%E5%90%88%E5%B9%B6
 # @PreInstall: pycryptodome
 # @Author : https://www.bajins.com
-# @File : m3u8Parse.py
+# @File : m3u8_parse.py
 # @Version: 1.0.0
 # @Time : 2020/1/11 22:09
 # @Project: reptile-python

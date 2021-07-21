@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8 -*-
 # @Author : bajins https://www.bajins.com
-# @File : Config.py
+# @File : config.py
 # @Version: 1.0.0
 # @Time : 2019/8/27 10:28
 # @Project: windows-wallpaper-python
@@ -10,7 +10,7 @@
 
 import os
 
-from utils import FileUtil
+from utils import file_util
 
 
 def generate_conf():
@@ -48,7 +48,7 @@ def generate_conf():
         # 字符编码
         CHARSET = 
         """
-        FileUtil.writ_file(conf, content)
+        file_util.writ_file(conf, content)
 
 
 def init():
@@ -56,7 +56,7 @@ def init():
     初始化
     :return:
     """
-    app = FileUtil.Config("app.conf")
+    app = file_util.Config("app.conf")
     data_dir = app.get("APP", "DATA_DIR")
     if data_dir == "" or data_dir is None:
         raise ValueError("请配置数据存放目录！")

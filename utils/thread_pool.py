@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8 -*-
 # @Author : bajins https://www.bajins.com
-# @File : ThreadPool.py
+# @File : thread_pool.py
 # @Version: 1.0.0
 # @Time : 2019/10/17 11:45
 # @Project: scripts_python

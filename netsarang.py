@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8 -*-
 # @Author : bajins https://www.bajins.com
-# @File : Netsarang.py
+# @File : netsarang.py
 # @Version: 1.0.0
 # @Time : 2019/9/17 18:22
 # @Project: scripts_python
@@ -19,9 +19,9 @@ from bs4 import BeautifulSoup
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.wait import WebDriverWait
 
-import Mail
-from utils import HttpUtil, StringUtil, ReptileUtil, TimeUtil
-from utils.ExceptionUtil import MsgException
+import mail
+from utils import http_util, string_util, reptile_util, time_util
+from utils.exception_util import MsgException
 
 netsarang_info = {}
 
@@ -47,7 +47,7 @@ def send_mail_dp(mail: str, product: str):
         url = "https://www.netsarang.com/zh/xmanager-power-suite-download"
 
     try:
-        driver = ReptileUtil.selenium_driver(url)
+        driver = reptile_util.selenium_driver(url)
         # 使用selenium通过id，name或class的方式来获取到这个input标签
         # 查找元素，传入值（输入的内容）
         driver.find_element_by_css_selector("input[name='user-name']").send_keys(mail.split("@")[0])
@@ -85,20 +85,20 @@ def get_url_dp(product):
     if netsarang_info is not None and netsarang_info and product in netsarang_info.keys():
         info = netsarang_info[product]
         # 如果数据不为空，并且日期为今天，这么做是为了避免消耗过多的性能，每天只查询一次
-        if len(info) > 1 and not info and TimeUtil.date_compare_to(info[0], datetime.now()) == 0:
+        if len(info) > 1 and not info and time_util.date_compare_to(info[0], datetime.now()) == 0:
             return info[1]
 
-    prefix = StringUtil.random_lowercase_alphanumeric(9)
-    suffix = Mail.lin_shi_you_xiang_suffix()
+    prefix = string_util.random_lowercase_alphanumeric(9)
+    suffix = mail.lin_shi_you_xiang_suffix()
 
-    Mail.lin_shi_you_xiang_apply(prefix)
+    mail.lin_shi_you_xiang_apply(prefix)
     mail = prefix + suffix
 
     send_mail_dp(mail, product)
 
     time.sleep(10)
 
-    mail_list = Mail.lin_shi_you_xiang_list(prefix)
+    mail_list = mail.lin_shi_you_xiang_list(prefix)
 
     mail_len = len(mail_list)
     if mail_len == 0 or not mail_list:
@@ -113,7 +113,7 @@ def get_url_dp(product):
         raise MsgException("邮件ID为空！")
 
     # 获取最新一封邮件
-    mail_content = Mail.lin_shi_you_xiang_get_mail(mailbox, mail_id)
+    mail_content = mail.lin_shi_you_xiang_get_mail(mailbox, mail_id)
 
     # 解密，邮件协议Content-Transfer-Encoding指定了base64
     html_text = base64.b64decode(mail_content.split("AmazonSES")[1])
@@ -127,7 +127,7 @@ def get_url_dp(product):
     # href = bs.find("a", {"target": "download_frame"})["href"]
 
     try:
-        driver = ReptileUtil.selenium_driver(href)
+        driver = reptile_util.selenium_driver(href)
         driver.implicitly_wait(10)
         href = driver.find_element_by_css_selector("a[target='download_frame']").get_attribute("href")
     finally:
@@ -192,7 +192,7 @@ def send_mail(mail: str, product: str):
         "product_name": (None, product_name),
     }
     res = requests.post("https://www.netsarang.com/json/download/process.html", data,
-                        headers={"User-Agent": HttpUtil.USER_AGENT}, verify=False, timeout=600)
+                        headers={"User-Agent": http_util.USER_AGENT}, verify=False, timeout=600)
     res = json.load(res.text)
     if not res or res["errorCounter"] != 0 or not res["result"]:
         raise MsgException("邮箱发送失败！")
@@ -222,7 +222,7 @@ def get_url(lang: str, token: str):
         'language': (None, language)
     }
     res = requests.post("https://www.netsarang.com/json/download/process.html", data,
-                        headers={"User-Agent": HttpUtil.USER_AGENT}, verify=False, timeout=600)
+                        headers={"User-Agent": http_util.USER_AGENT}, verify=False, timeout=600)
     return json.load(res.text)
 
 

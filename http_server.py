@@ -10,7 +10,7 @@
 # https://github.com/wonjohnchoi/Simple-Python-File-Server-With-Browse-Upload-and-Authentication
 # https://github.com/4d4c/http.server_upload
 # @see https://gist.github.com/UniIsland/3346170
-# @File : HttpServer.py
+# @File : http_server.py
 # @Version: 1.1.0
 # @Time : 2021/01/29 11:25:38
 # @Project: scripts_python

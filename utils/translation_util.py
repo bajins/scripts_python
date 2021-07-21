@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8 -*-
 # @Author : bajins https://www.bajins.com
-# @File : TranslationUtil.py
+# @File : translation_util.py
 # @Version: 1.0.0
 # @Time : 2019/10/22 9:20
 # @Project: scripts_python
