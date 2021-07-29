@@ -44,7 +44,7 @@ def run(range=1):
     if range == 10:  # 运行到第10次
         set_time(scheduler)
         return
-    res = requests.get("https://www.baidu.com",
+    res = requests.get("https://www.bajins.com",
                        headers={"User-Agent": USER_AGENT}, verify=False, timeout=600)
     if res.status_code != 200 or res is None:
         login()

@@ -13,6 +13,7 @@
 # @Software: PyCharm
 
 import os
+import re
 import time
 from dataclasses import dataclass
 from urllib.parse import urljoin
@@ -40,7 +41,7 @@ class DownLoadM3U8(object):
     def __post_init__(self):
         self.thread_pool = ThreadPoolExecutor(max_workers=10)
         if not self.file_name:
-            self.file_name = 'new.mp4'
+            self.file_name = re.sub(r".*/|\..*", "", m3u8_url) + ".mp4"
         self.m3u8_obj = m3u8.load(self.m3u8_url)
         self.cryptor = self.get_key()
 
@@ -102,7 +103,8 @@ class DownLoadM3U8(object):
 
 if __name__ == '__main__':
     # aHR0cHM6Ly93d3cuMTAyNHV1LmNjL3ZvZC9saXN0aW5nLTQtMC0wLTAtMC0wLTAtMC0wLTEuaHRtbA==
-    m3u8_url = 'https://zk.wb699.com/2019/03/06/aLdpUIBeHC48HGTk/playlist.m3u8'
+    # m3u8_url = 'https://zk.wb699.com/2019/03/06/aLdpUIBeHC48HGTk/playlist.m3u8'
+    m3u8_url = 'https://cdn.jwplayer.com/manifests/alBw0754.m3u8'
     file_name = ''
 
     start = time.time()
