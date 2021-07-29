@@ -20,13 +20,29 @@ import aiohttp
 import requests
 import urllib3
 
-USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) " \
-             "Chrome/77.0.3865.75 Safari/537.36 "
 
 # 去除警告
+import constants
+
 requests.packages.urllib3.disable_warnings()
 # 如果请求失败默认重试次数
 requests.adapters.DEFAULT_RETRIES = 5
+
+
+def get_session():
+    """
+    获取session
+    :param url:请求地址
+    :param data:数据，map或dict格式
+    :return:
+    """
+    session = requests.sessions.Session()
+    # 关闭多余的连接
+    session.keep_alive = False
+    session.headers["User-Agent"] = constants.USER_AGENT
+    session.verify = False
+    session.timeout = 600
+    return session
 
 
 def get(url, data=None):
@@ -39,7 +55,7 @@ def get(url, data=None):
     session = requests.sessions.Session()
     # 关闭多余的连接
     session.keep_alive = False
-    return session.get(url, params=data, headers={"User-Agent": USER_AGENT}, verify=False, timeout=600)
+    return session.get(url, params=data, headers={"User-Agent": constants.USER_AGENT}, verify=False, timeout=600)
 
 
 def post(url, data):
@@ -49,7 +65,7 @@ def post(url, data):
     :param data:数据，map或dict格式
     :return:
     """
-    return requests.post(url, data, headers={"User-Agent": USER_AGENT}, verify=False, timeout=600)
+    return requests.post(url, data, headers={"User-Agent": constants.USER_AGENT}, verify=False, timeout=600)
 
 
 def delete(url, data):
@@ -59,7 +75,7 @@ def delete(url, data):
     :param data:数据，map或dict格式
     :return:
     """
-    return requests.delete(url=url, params=data, headers={"User-Agent": USER_AGENT}, verify=False, timeout=600)
+    return requests.delete(url=url, params=data, headers={"User-Agent": constants.USER_AGENT}, verify=False, timeout=600)
 
 
 def get_json(url, data):
@@ -101,7 +117,7 @@ def download_big_file_urlib(url, mkdir, name=""):
 
     req = Request(url)
     # 增加header头信息
-    req.add_header('User-Agent', USER_AGENT)
+    req.add_header('User-Agent', constants.USER_AGENT)
 
     response = urlopen(req)
     while True:
@@ -143,7 +159,7 @@ def download_big_file(url, mkdir, name=""):
         name = os.path.join(mkdir, name)
 
     start_time = time.time()
-    req = requests.get(url, stream=True, headers={"User-Agent": USER_AGENT}, verify=False)
+    req = requests.get(url, stream=True, headers={"User-Agent": constants.USER_AGENT}, verify=False)
     with req as r:
         content_length = int(r.headers['content-length'])
         print(name, 'content-length: %dB/%.2fKB/%.2fMB' % (
@@ -190,7 +206,7 @@ def download_file(url, mkdir, name=""):
     # 判断文件是否存在
     # if not os.path.exists(name):
     if not os.path.isfile(name):
-        with requests.get(url, headers={"User-Agent": USER_AGENT}, verify=False, timeout=600) as req:
+        with requests.get(url, headers={"User-Agent": constants.USER_AGENT}, verify=False, timeout=600) as req:
             with open(name, "wb") as f:
                 f.write(req.content)
     return name

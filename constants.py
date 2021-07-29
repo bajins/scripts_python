@@ -25,6 +25,9 @@ APP_DIRECTORY = os.path.dirname(APP_PATH)
 # 当前文件所在目录路径
 CURRENT_PATH = os.path.dirname(__file__)
 
+USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) " \
+             "Chrome/77.0.3865.75 Safari/537.36 "
+
 # 缓存目录路径
 TEMP_PATH = sys.path[1]
 
