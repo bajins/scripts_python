@@ -209,7 +209,7 @@ def one_drive(rclone_dir, drive_name, region="1", access_token=None):
         # 是否使用自动设置，同样直接NO，选择n
         child.sendline('n')
 
-    index = child.expect([pexpect.EOF, 'result'])
+    index = child.expect([pexpect.EOF, 'config_token'])
     if index == 1:
         # 如果传入的授权为空，就在文件中获取
         if access_token is None:
@@ -219,16 +219,16 @@ def one_drive(rclone_dir, drive_name, region="1", access_token=None):
             # 等待用户操作时间，秒为单位
             time.sleep(240)
             # 读取文件中第一行内容
-            with open("one_drive_access_token.txt", "r")as f:
+            with open("one_drive_access_token.txt", "r") as f:
                 access_token = f.readlines()
             if access_token == "":
                 raise Exception("读取到授权文件为空，如果操作时间过长，请调整time.sleep")
         # 这里输入在Windows下CMD中获取的access_token
         child.sendline(access_token)
 
-    index = child.expect([pexpect.EOF, 'Your choice'])
+    index = child.expect([pexpect.EOF, 'config_type'])
     if index == 1:
-        # 这里选择1，onedrive个人版或是商业版
+        # 1 onedrive、2 sharepoint、3 url、4 search、5 driveid、6 siteid、7 path
         child.sendline('1')
 
     try:
@@ -245,12 +245,7 @@ def one_drive(rclone_dir, drive_name, region="1", access_token=None):
     except pexpect.TIMEOUT:  # 匹配不上将抛出超时异常
         pass
 
-    index = child.expect([pexpect.EOF, 'Chose drive to use'])
-    if index == 1:
-        # 提示找到一个驱动器，输入找到的序号0
-        child.sendline('0')
-
-    index = child.expect([pexpect.EOF, "Found drive 'root' of type 'business'"])
+    index = child.expect([pexpect.EOF, "Found drive 'root' of type 'business'"])  # Drive OK?
     if index == 1:
         # 找到类型为“business”的驱动器 "root"，输入y
         child.sendline('y')
@@ -304,7 +299,7 @@ def google_drive(rclone_dir, drive_name):
         # 等待用户操作时间，秒为单位
         time.sleep(120)
         # 读取文件中第一行内容
-        with open("google_drive_verification_code.txt", "r")as f:
+        with open("google_drive_verification_code.txt", "r") as f:
             google_drive_verification_code = f.readlines()
         if google_drive_verification_code == "":
             raise Exception("读取到授权文件为空，如果操作时间过长，请调整time.sleep")
