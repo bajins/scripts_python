@@ -245,7 +245,7 @@ def one_drive(rclone_dir, drive_name, region="1", access_token=None):
     except pexpect.TIMEOUT:  # 匹配不上将抛出超时异常
         pass
 
-    index = child.expect([pexpect.EOF, "Found drive 'root' of type 'business'"])  # Drive OK?
+    index = child.expect([pexpect.EOF, "Drive OK?"])  # Found drive 'root' of type 'business'
     if index == 1:
         # 找到类型为“business”的驱动器 "root"，输入y
         child.sendline('y')
