@@ -8,7 +8,7 @@
 # @Project: scripts_python
 # @Package:
 # @Software: PyCharm
-
+import configparser
 import json
 # 如果import urllib，则在使用urllib.request时会报错
 import urllib.request
@@ -312,22 +312,13 @@ def google_drive(rclone_dir, drive_name):
     auto_rclone_config_end(child)
 
 
-def write_google_drive_config(rclone_dir, name, token=None, drive_type="drive", scope="drive", team_drive=None,
-                              root_folder_id=None, shared_with_me=None, service_account_file=None, saf=None):
+def red_rclone_config(rclone_dir: str, name: str):
     """
-    此函数是为了方便写入在其他地方已经授权复制过来的Google Drive配置，而不需要重新创建配置
-    :param name: 自定义远程配置名称
-    :param token: 授权token
-    :param drive_type: drive类型，一般默认即可
-    :param scope: rclone从驱动器请求访问时应使用的范围，对应--drive-scope参数
-    :param team_drive: 团队驱动器的ID，对应--drive-team-drive参数
-    :param root_folder_id: 根文件夹的ID，对应--drive-root-folder-id参数
-    :param shared_with_me: 只显示与我共享的文件，对应--drive-shared-with-me参数
-    :param saf: 服务帐户凭据JSON文件内容，此参数有值且service_account_file为空时默认saf.json
-    :param service_account_file: 服务帐户凭据JSON文件路径，对应--drive-service-account-file参数
+    获取rclone配置文件
+    :param rclone_dir
+    :param name:
     :return:
     """
-    import configparser
     conf = configparser.ConfigParser()
     # 获取rclone配置文件的路径
     file = subprocess.getoutput(f"./{rclone_dir}/rclone config file")
@@ -341,27 +332,74 @@ def write_google_drive_config(rclone_dir, name, token=None, drive_type="drive", 
     if name not in node_array:
         # 添加远程节点
         conf.add_section(name)
-        conf.set(name, 'type', drive_type)
-        conf.set(name, 'scope', scope)
-        if token is not None:
-            conf.set(name, 'token', token)
-        if team_drive is not None:
-            conf.set(name, 'team_drive', team_drive)
-        if root_folder_id is not None:
-            conf.set(name, 'root_folder_id', root_folder_id)
-        if shared_with_me is not None:
-            # "true" 或 ”false"
-            conf.set(name, 'shared_with_me', shared_with_me)
-        if saf is not None:
-            if service_account_file is None:
-                service_account_file = "saf.json"
-            with open(service_account_file, 'w') as f:
-                f.write(saf)
-        if service_account_file is not None:
-            # 服务账户授权json文件路径 https://rclone.org/drive/#service-account-support
-            conf.set(name, 'service_account_file ', service_account_file)
-        with open(file, 'w') as f:
-            conf.write(f)
+    return conf, file
+
+
+def write_one_drive_config(rclone_dir: str, name: str, type="onedrive", drive_type="business", token=None,
+                           drive_id=None):
+    """
+    此函数是为了方便写入在其他地方已经授权复制过来的One Drive配置，而不需要重新创建配置
+    :param rclone_dir:
+    :param name: 自定义远程配置名称
+    :param type: drive类型，一般默认即可
+    :param drive_type:
+    :param token: 授权token
+    :param drive_id:
+    :return:
+    """
+    conf, file = red_rclone_config(rclone_dir, name)
+
+    conf.set(name, 'type', type)
+    conf.set(name, 'drive_type', drive_type)
+    if token is not None:
+        conf.set(name, 'token', token)
+    if drive_id is not None:
+        conf.set(name, 'drive_id', drive_id)
+
+    with open(file, 'w') as f:
+        conf.write(f)
+
+
+def write_google_drive_config(rclone_dir: str, name: str, token=None, drive_type="drive", scope="drive",
+                              team_drive=None, root_folder_id=None, shared_with_me=None, service_account_file=None,
+                              saf=None):
+    """
+    此函数是为了方便写入在其他地方已经授权复制过来的Google Drive配置，而不需要重新创建配置
+    :param name: 自定义远程配置名称
+    :param token: 授权token
+    :param drive_type: drive类型，一般默认即可
+    :param scope: rclone从驱动器请求访问时应使用的范围，对应--drive-scope参数
+    :param team_drive: 团队驱动器的ID，对应--drive-team-drive参数
+    :param root_folder_id: 根文件夹的ID，对应--drive-root-folder-id参数
+    :param shared_with_me: 只显示与我共享的文件，对应--drive-shared-with-me参数
+    :param saf: 服务帐户凭据JSON文件内容，此参数有值且service_account_file为空时默认saf.json
+    :param service_account_file: 服务帐户凭据JSON文件路径，对应--drive-service-account-file参数
+    :return:
+    """
+    conf, file = red_rclone_config(rclone_dir, name)
+
+    conf.set(name, 'type', drive_type)
+    conf.set(name, 'scope', scope)
+    if token is not None:
+        conf.set(name, 'token', token)
+    if team_drive is not None:
+        conf.set(name, 'team_drive', team_drive)
+    if root_folder_id is not None:
+        conf.set(name, 'root_folder_id', root_folder_id)
+    if shared_with_me is not None:
+        # "true" 或 ”false"
+        conf.set(name, 'shared_with_me', shared_with_me)
+    if saf is not None:
+        if service_account_file is None:
+            service_account_file = "saf.json"
+        with open(service_account_file, 'w') as f:
+            f.write(saf)
+    if service_account_file is not None:
+        # 服务账户授权json文件路径 https://rclone.org/drive/#service-account-support
+        conf.set(name, 'service_account_file ', service_account_file)
+
+    with open(file, 'w') as f:
+        conf.write(f)
 
 
 """
