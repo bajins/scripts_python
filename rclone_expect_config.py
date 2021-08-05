@@ -184,7 +184,7 @@ def auto_rclone_config_end(child):
 
 def one_drive(rclone_dir, drive_name, region="1", access_token=None):
     """
-    One Drive 配置
+    One Drive 配置，会自动获取drive_id
     api返回错误信息：https://docs.microsoft.com/zh-cn/onedrive/developer/rest-api/concepts/errors
     :param rclone_dir:  rclone运行目录
     :param drive_name:  自定义远程配置名称
