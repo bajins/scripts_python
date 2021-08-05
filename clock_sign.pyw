@@ -14,7 +14,7 @@
 把以下代码复制到其中并保存
 
 Set Shell = CreateObject("WScript.Shell")
-Shell.Run "python clock_sign.pyw", 0, False
+Shell.Run "pythonw clock_sign.pyw", 0, False
 """
 
 import datetime
