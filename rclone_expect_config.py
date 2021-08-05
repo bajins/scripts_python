@@ -351,6 +351,7 @@ def write_one_drive_config(rclone_dir: str, name: str, type="onedrive", drive_ty
 
     conf.set(name, 'type', type)
     conf.set(name, 'drive_type', drive_type)
+    # conf.set(name, 'region', "global")
     if token is not None:
         conf.set(name, 'token', token)
     if drive_id is not None:
@@ -360,9 +361,8 @@ def write_one_drive_config(rclone_dir: str, name: str, type="onedrive", drive_ty
         conf.write(f)
 
 
-def write_google_drive_config(rclone_dir: str, name: str, token=None, drive_type="drive", scope="drive",
-                              team_drive=None, root_folder_id=None, shared_with_me=None, service_account_file=None,
-                              saf=None):
+def write_google_drive_config(rclone_dir: str, name: str, token=None, type="drive", scope="drive", team_drive=None,
+                              root_folder_id=None, shared_with_me=None, service_account_file=None, saf=None):
     """
     此函数是为了方便写入在其他地方已经授权复制过来的Google Drive配置，而不需要重新创建配置
     :param name: 自定义远程配置名称
@@ -378,7 +378,7 @@ def write_google_drive_config(rclone_dir: str, name: str, token=None, drive_type
     """
     conf, file = red_rclone_config(rclone_dir, name)
 
-    conf.set(name, 'type', drive_type)
+    conf.set(name, 'type', type)
     conf.set(name, 'scope', scope)
     if token is not None:
         conf.set(name, 'token', token)
