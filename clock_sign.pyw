@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8 -*-
 # @Author : https://www.bajins.com
-# @Description :
-# @File : clock_sign.py
+# @Description : pythonw clock_sign.pyw
+# @File : clock_sign.pyw
 # @Version: 1.1.0
 # @Time : 2020/7/26 11:00
 # @Project: scripts_python
@@ -14,7 +14,7 @@
 把以下代码复制到其中并保存
 
 Set Shell = CreateObject("WScript.Shell")
-Shell.Run "python clock_sign.py", 0, False
+Shell.Run "python clock_sign.pyw", 0, False
 """
 
 import datetime
@@ -44,12 +44,15 @@ def run(range=1):
     if range == 10:  # 运行到第10次
         set_time(scheduler)
         return
-    res = requests.get("https://www.bajins.com",
-                       headers={"User-Agent": USER_AGENT}, verify=False, timeout=600)
+    detect()
+    scheduler.enter(60, 0, run, (range + 1,))  # 1分钟后再次运行
+
+
+def detect():
+    res = requests.get("https://www.bajins.com", headers={"User-Agent": USER_AGENT}, verify=False, timeout=600)
     if res.status_code != 200 or res is None:
         login()
         print(res.status_code)
-    scheduler.enter(60, 0, run, (range + 1,))  # 1分钟后再次运行
 
 
 def login():
@@ -59,15 +62,14 @@ def login():
     session.headers["User-Agent"] = USER_AGENT
     session.verify = False
     session.timeout = 600
-    res = session.get(
-        "http://192.168.10.253:8080/smsauth/3/pc.php?params=pwd&force_modify_password=")  # 登录页面
+    res = session.get("http://192.168.10.253:8080/smsauth/3/pc.php?params=pwd&force_modify_password=")  # 登录页面
     cookie = ''
     for name, value in session.cookies.items():
         cookie += '{0}={1}'.format(name, value)
     session.headers["Referer"] = res.url
     session.headers["Cookie"] = cookie
-    res = session.get(
-        "http://192.168.10.253:8080/login_check_password_ageout.php?username=temp004&passwd=temp004")  # 登录验证
+    # 登录验证
+    res = session.get("http://192.168.10.253:8080/login_check_password_ageout.php?username=temp004&passwd=temp004")
     res = session.get(session.headers["Referer"])  # 再次请求登录页面
     res = session.post("http://192.168.10.253:8080/cgi-bin/ace_web_auth.cgi?web_jumpto=&orig_referer="
                        "&username=temp004&userpwd=temp004&login_page=",
@@ -86,6 +88,7 @@ if __name__ == '__main__':
     # ct = win32api.GetConsoleTitle()
     # hd = win32gui.FindWindow(0, ct)
     # win32gui.ShowWindow(hd, 0)
+    detect()
     # 设置时间调度器
     scheduler = sched.scheduler(time.time, time.sleep)
     set_time(scheduler)
