@@ -49,9 +49,12 @@ def run(range=1):
 
 
 def detect():
-    res = requests.get("https://www.bajins.com", headers={"User-Agent": USER_AGENT}, verify=False, timeout=600)
-    search = re.search(r"""location.href="http://192.168.10.253:8080/auth_entry.php\?authmeth=3&webtype=3""", res.text)
-    if res is None or res.status_code != 200 or res.text is None or search is not None:
+    try:
+        res = requests.get("https://www.bajins.com", headers={"User-Agent": USER_AGENT}, verify=False, timeout=600)
+        search = re.search(r"""location.href="http://192.168.10.253:8080/auth_entry.php""", res.text)
+        if res is None or res.status_code != 200 or res.text is None or search is not None:
+            login()
+    except:
         login()
 
 
