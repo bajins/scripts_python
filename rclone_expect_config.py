@@ -30,14 +30,18 @@ def run_cmd(cmd, popen=True, daemon=False, log_path="rclone.log"):
     执行命令并根据参数决定是否在控制台输出执行结果
     :param cmd:  执行的命令
     :param popen:  是否回显，默认显示回显到控制台
-    :param daemon:  是否守护进程，默认不启用，当popen=True时才启用
-    :param log_path:  日志文件路径，在popen=False时启用
+    :param daemon:  是否守护进程（后台运行），默认不启用
+    :param log_path:  日志文件路径，在popen=False且daemon=True时启用
     :return:
     """
-    if not popen:  # 执行命令不输出回显并保存执行结果到日志文件（后台运行）
-        call = subprocess.call(f'nohup {cmd} >{log_path} &', shell=True)
-        if call != 0:
-            print(f"执行失败，请查看{log_path}中的日志")
+    if not popen:
+        if daemon:
+            # 执行命令不输出回显并保存执行结果到日志文件（后台运行）
+            call = subprocess.call(f'nohup {cmd} >{log_path} &', shell=True)
+            if call != 0:
+                print(f"执行失败，请查看{log_path}中的日志")
+        else:
+            print(subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False))
     else:  # 执行shell命令并实时输出回显
         if daemon:
             # 将当前进程fork为一个守护进程
@@ -45,9 +49,8 @@ def run_cmd(cmd, popen=True, daemon=False, log_path="rclone.log"):
             if pid > 0:
                 # 父进程退出
                 sys.exit(0)
-        # universal_newlines=True, bufsize=1
-        process = subprocess.Popen(cmd, shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-                                   stderr=subprocess.STDOUT)
+        # universal_newlines=True, bufsize=1, stdin=subprocess.PIPE, stdout=subprocess.PIPE
+        process = subprocess.Popen(cmd, shell=True, stderr=subprocess.STDOUT)
         # 判断子进程是否结束
         while process.poll() is None:
             line = process.stdout.readline()
@@ -81,34 +84,38 @@ def download_rclone():
             download_url = asset["browser_download_url"]
             # rclone压缩包名
             zip_name = asset["name"]
-            if os.path.exists(zip_name):
-                # 删除同名压缩包
-                os.remove(zip_name)
             # 解压后目录名
             dir_name = zip_name.replace(".zip", "")
-            if os.path.exists(dir_name):
+
+            if not os.path.exists(zip_name):
+                # 删除同名压缩包
+                # os.remove(zip_name)
+
+                # 下载当前系统架构的文件
+                # 创建一个opener对象
+                opener = urllib.request.build_opener()
+                # 向opener传入请求头信息
+                opener.addheaders.append(('User-agent', user_agent))
+                # 将创建好的opener对象装入request
+                urllib.request.install_opener(opener)
+                filename, res = urllib.request.urlretrieve(download_url, zip_name)
+                # 从urlretrieve调用中清理临时文件
+                urllib.request.urlcleanup()
+                if not os.path.exists(filename):
+                    raise Exception("rclone下载失败！")
+
+            if not os.path.exists(dir_name):
                 # 删除同名目录，防止目录中的文件已被删除
-                shutil.rmtree(dir_name)
-            # 下载当前系统架构的文件
-            # 创建一个opener对象
-            opener = urllib.request.build_opener()
-            # 向opener传入请求头信息
-            opener.addheaders.append(('User-agent', user_agent))
-            # 将创建好的opener对象装入request
-            urllib.request.install_opener(opener)
-            filename, res = urllib.request.urlretrieve(download_url, zip_name)
-            # 从urlretrieve调用中清理临时文件
-            urllib.request.urlcleanup()
-            if not os.path.exists(filename):
-                raise Exception("rclone下载失败！")
-            if zipfile.is_zipfile(zip_name):
-                # 解压
-                with zipfile.ZipFile(zip_name, "r") as zip_obj:
-                    zip_obj.extractall(path=".")
-            # 授权：https://blog.csdn.net/u013632755/article/details/106599210
-            # os.chmod(dir_name, stat.S_IRWXO + stat.S_IRWXO + stat.S_IRWXO + stat.S_IRWXO)
-            subprocess.run(['chmod', "-R", "777", dir_name], universal_newlines=True, stdout=subprocess.PIPE,
-                           stderr=subprocess.PIPE, shell=False)
+                # shutil.rmtree(dir_name)
+
+                if zipfile.is_zipfile(zip_name):
+                    # 解压
+                    with zipfile.ZipFile(zip_name, "r") as zip_obj:
+                        zip_obj.extractall(path=".")
+                # 授权：https://blog.csdn.net/u013632755/article/details/106599210
+                # os.chmod(dir_name, stat.S_IRWXO + stat.S_IRWXO + stat.S_IRWXO + stat.S_IRWXO)
+                run_cmd(['chmod', "-R", "777", dir_name], popen=False)
+
             return dir_name
 
 
@@ -335,13 +342,13 @@ def red_rclone_config(rclone_dir: str, name: str):
     return conf, file
 
 
-def write_one_drive_config(rclone_dir: str, name: str, type="onedrive", drive_type="business", token=None,
+def write_one_drive_config(rclone_dir: str, name: str, type_="onedrive", drive_type="business", token=None,
                            drive_id=None):
     """
     此函数是为了方便写入在其他地方已经授权复制过来的One Drive配置，而不需要重新创建配置
     :param rclone_dir:
     :param name: 自定义远程配置名称
-    :param type: drive类型，一般默认即可
+    :param type_: drive类型，一般默认即可
     :param drive_type:
     :param token: 授权token
     :param drive_id:
@@ -349,7 +356,7 @@ def write_one_drive_config(rclone_dir: str, name: str, type="onedrive", drive_ty
     """
     conf, file = red_rclone_config(rclone_dir, name)
 
-    conf.set(name, 'type', type)
+    conf.set(name, 'type', type_)
     conf.set(name, 'drive_type', drive_type)
     # conf.set(name, 'region', "global")
     if token is not None:
@@ -361,12 +368,14 @@ def write_one_drive_config(rclone_dir: str, name: str, type="onedrive", drive_ty
         conf.write(f)
 
 
-def write_google_drive_config(rclone_dir: str, name: str, token=None, type="drive", scope="drive", team_drive=None,
+def write_google_drive_config(rclone_dir: str, name: str, token=None, type_="drive", scope="drive", team_drive=None,
                               root_folder_id=None, shared_with_me=None, service_account_file=None, saf=None):
     """
     此函数是为了方便写入在其他地方已经授权复制过来的Google Drive配置，而不需要重新创建配置
+    :param rclone_dir:
     :param name: 自定义远程配置名称
     :param token: 授权token
+    :param type_:
     :param drive_type: drive类型，一般默认即可
     :param scope: rclone从驱动器请求访问时应使用的范围，对应--drive-scope参数
     :param team_drive: 团队驱动器的ID，对应--drive-team-drive参数
@@ -378,7 +387,7 @@ def write_google_drive_config(rclone_dir: str, name: str, token=None, type="driv
     """
     conf, file = red_rclone_config(rclone_dir, name)
 
-    conf.set(name, 'type', type)
+    conf.set(name, 'type', type_)
     conf.set(name, 'scope', scope)
     if token is not None:
         conf.set(name, 'token', token)
@@ -453,12 +462,17 @@ params = " --multi-thread-cutoff 50M --multi-thread-streams 50 --transfers 100 -
 
 # 复制分享的链接文件或目录到团队盘
 # run_cmd(f'./{rclone_dir}/rclone copy --drive-server-side-across-configs gdrive_stared: gdrive_team: {params}')
+
 # 我的云盘同步到团队盘
 # run_cmd(f'./{rclone_dir}/rclone sync --drive-server-side-across-configs gdrive: gdrive_team: {params}')
+
 # 查看目录大小，可使用--drive-root-folder-id参数指定其他分享链接ID
 # run_cmd(f'./{rclone_dir}/rclone size gdrive_stared: ')
+
 # 通过服务账户授权，指定账户查看网盘大小
 # run_cmd(f'./{rclone_dir}/rclone -v --drive-impersonate woytu.com@gmail.com size gservicedrive: ')
+
+# 同步，排除参数--exclude "/{{images}}/"  只同步指定文件参数--include "/{{images}}/**"
 run_cmd(f'./{rclone_dir}/rclone sync gdrive:/ onedrive:/ {params}')
 # 去重
 # run_cmd(f'./{rclone_dir}/rclone dedupe --dedupe-mode oldest gdrive:/ {params}')

@@ -53,8 +53,9 @@ def get_ka():
     return ka
 
 
-def pull_push():
+def get_kernels():
     """
+    获取配置信息、用户、内核
     https://github.com/Kaggle/kaggle-api#kernels
     其中cli后缀函数是用于shell中执行：
         kernel_pull(self, user_name, kernel_slug, kwargs)
@@ -75,10 +76,36 @@ def pull_push():
         kernels_status_cli(self, kernel, kernel_opt)
     """
     ka = get_ka()
-
     user = ka.config_values[ka.CONFIG_NAME_USER]  # 获取当前用户
-
     kls = ka.kernels_list(user=user)  # 指定用户的内核
+    return ka, kls, user
+
+
+def download_kernels():
+    """
+    下载所有内核
+    :return:
+    """
+    ka, kls, user = get_kernels()
+    print(kls)
+    # kls_list = [kls[i:i + 6] for i in range(0, len(kls), 6)]
+    for kl in kls:
+        name = re.sub(r"\.|_", "-", str(kl))  # 只能包含字母数字和-
+        fully_name = user + "/" + name
+        try:
+            res = ka.kernels_status(fully_name)  # 获取内核运行状态
+            print(res)
+            ka.kernels_pull(fully_name, "kaggle_kernels")
+        except ApiException as e:
+            print(fully_name, e.status, e.reason)
+
+
+def pull_push():
+    """
+    下载元数据并推送
+    :return:
+    """
+    ka, kls, user = get_kernels()
     print(kls)
     # kls_list = [kls[i:i + 6] for i in range(0, len(kls), 6)]
     running_qty = 0
@@ -198,10 +225,7 @@ def kernels_initialize(api, name, folder):
 
 
 if __name__ == '__main__':
-    # run()
-    # 第一个参数是时间间隔（单位是秒，只有秒），第二个参数是要调用的函数名，第三个参数是调用函数的参数(tuple)
-    # t = Timer(inc, run, (inc,))
-    # t.start()
+    # download_kernels()
     # 注意 sched 模块不是循环的，一次调度被执行后就结束了，如果想再执行，请再次 enter
     # 四个参数分别为：间隔事件、优先级（用于同时间到达的两个事件同时执行时定序）、被调用触发的函数，给该触发函数的参数（tuple形式）
     schedule.enter(0, 0, pull_push)  # 提交拉取的内核
