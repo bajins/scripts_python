@@ -53,6 +53,8 @@ def run_cmd(cmd, popen=True, daemon=False, log_path="rclone.log"):
         process = subprocess.Popen(cmd, shell=True, stderr=subprocess.STDOUT)
         # 判断子进程是否结束
         while process.poll() is None:
+            if process.stdout is None:
+                continue
             line = process.stdout.readline()
             line = line.strip()
             if line:
