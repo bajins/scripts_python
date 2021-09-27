@@ -71,7 +71,8 @@ def download_rclone():
         maxbit = "linux-amd64.zip"
     else:
         maxbit = "linux-386.zip"
-    user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.105 Safari/537.36"
+    user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) " \
+                 "Chrome/84.0.4147.105 Safari/537.36 "
     # 请求GitHub api
     req = urllib.request.Request("https://api.github.com/repos/rclone/rclone/releases/latest",
                                  headers={"User-Agent": user_agent}, method='GET')
@@ -248,7 +249,7 @@ def one_drive(rclone_dir, drive_name, region="1", access_token=None):
             buffer = child.buffer.decode()
             print(buffer)
             if "HTTP error 429 (429 Too Many Requests)" in buffer:
-                raise ValueError("429请求太多：请等待一段时间后再次尝试！")
+                raise ValueError(f"{drive_name} 429请求太多：请等待一段时间后再次尝试！")
             # 抛出授权出现错误异常
             raise ValueError(f"""{drive_name} 授权出现错误，请重新执行 ./rclone.exe authorize "onedrive" 以获取新的token """)
     except pexpect.TIMEOUT:  # 匹配不上将抛出超时异常
