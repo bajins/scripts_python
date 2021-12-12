@@ -127,8 +127,9 @@ def auto_rclone_config_start(rclone_dir, storage, drive_name):
     自动配置开始
     :param rclone_dir:  rclone运行目录
     :param storage:
-        rclone 15.4之前版本 Microsoft OneDrive:23 , Google Drive:13
-        rclone 15.4之后版本 Microsoft OneDrive:26 , Google Drive:15
+        rclone 1.54之前版本 Microsoft OneDrive:23 , Google Drive:13
+        rclone 1.54~1.56版本 Microsoft OneDrive:26 , Google Drive:15
+        rclone 1.57版本 Microsoft OneDrive:27 , Google Drive:16
     :param drive_name:  自定义远程配置名称
     :return:
     """
@@ -202,7 +203,7 @@ def one_drive(rclone_dir, drive_name, region="1", access_token=None):
     :param access_token:  授权token，为执行 rclone authorize "onedrive" 获取到的token
     :return:
     """
-    child = auto_rclone_config_start(rclone_dir, "26", drive_name)
+    child = auto_rclone_config_start(rclone_dir, "27", drive_name)
     if child is None:
         return
 
@@ -271,7 +272,7 @@ def google_drive(rclone_dir, drive_name):
     :param drive_name: 自定义远程配置名称
     :return:
     """
-    child = auto_rclone_config_start(rclone_dir, "15", drive_name)
+    child = auto_rclone_config_start(rclone_dir, "16", drive_name)
     if child is None:
         return
 
