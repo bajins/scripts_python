@@ -2,12 +2,17 @@
 
 基于Flask的HTML转PDF服务，可以将HTML内容转换为PDF格式文件。
 
+示例：[https://tool.bajins.com/wp](https://tool.bajins.com/wp)
+
+
+
 ## 功能特点
 
 - 将HTML网页内容转换为PDF文件
 - 支持自定义页面尺寸和边距
 - 提供Web界面和RESTful API接口
 - 支持两种转换引擎：WeasyPrint（推荐）和xhtml2pdf
+
 
 ## 安装说明
 
