@@ -2,8 +2,8 @@ import fitz  # PyMuPDF的导入名是fitz
 
 # --- 输入参数 ---
 pdf_path = "S203_MB_HWA.0.1.pdf"
-search_text = "L39"
-output_path = "output_highlighted.pdf"
+search_text = "MP35"
+output_path = "S203_MB_HWA.0.1-Python.pdf"
 
 try:
     # 打开PDF文件
@@ -13,7 +13,16 @@ try:
     total_hits = 0
     # 遍历每一页
     for page_num, page in enumerate(doc):
-        # 1. 使用 get_text("dict") 获取结构化的文本数据
+        # "text" (默认)	纯文本字符串。PyMuPDF会尽力模拟原始页面的布局，使用空格和换行符。	快速获取页面的可读文本，用于预览或简单的复制粘贴。
+        # "words"	单词列表。每个元素是一个元组 (x0, y0, x1, y1, "单词", ...)。	精确的全词匹配，获取每个单词的独立边界框。这是我们之前最终方案的核心。
+        # "blocks"	文本块列表。每个元素是一个元组 (x0, y0, x1, y1, "整个文本块\n的内容", ...)。	按段落或逻辑块提取文本，适合处理文章或报告。
+        # "dict"	详细的字典。一个嵌套的字典，结构为 {"width": ..., "height": ..., "blocks": [...]}，其中每个块包含行（lines），每行包含片段（spans）。	最强大的结构化数据。可以获取每个文本片段的字体、大小、颜色和精确坐标。
+        # "json"	"dict" 格式的JSON字符串。与 "dict" 内容相同，但输出为JSON格式。	方便将提取结果传递给其他系统或Web应用。
+        # "html"	HTML。生成一个简单的HTML页面，试图通过 <div> 和 <span> 的 style 属性来保留原始布局。	在Web浏览器中预览文本布局，保留格式。
+        # "xhtml"	XHTML。与 "html" 类似，但遵循更严格的XML规范。	用于需要XML兼容性的场景。
+        # "xml"	XML。生成一个详细的XML文档，结构与 "dict" 类似，包含每个字符的详细信息。	用于需要XML格式的深度数据分析。
+        # "rawdict"	原始字典。与 "dict" 结构相同，但不按阅读顺序排序，而是反映PDF内部的原始对象顺序。	等效于 PDFBox 的 setSortByPosition(false)。用于底层分析。
+        # "rawjson"	"rawdict" 格式的JSON字符串。	与 "rawdict" 用途相同。
         # 这是一个包含了页面所有文本信息的复杂字典
         # page_data = page.get_text("dict", flags=fitz.TEXTFLAGS_SEARCH)
 
